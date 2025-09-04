@@ -4,12 +4,8 @@ import { useOrganization, OrganizationSwitcher } from "@clerk/nextjs";
 import { UserGroupIcon, BuildingLibraryIcon } from "@heroicons/react/24/solid";
 import { button as buttonStyles } from "@heroui/theme";
 import GroupCard from "@/components/GroupCard";
-
-// Dummy data for illustration
-const groups = [
-	{ id: "1", name: "Tech Society", members: 24, isPublic: true, activity: 80 },
-	{ id: "2", name: "Law Council", members: 12, isPublic: false, activity: 65 },
-];
+import { groups } from "@/lib/data";
+import type { IGroup } from "@/types";
 
 export default function GroupsPage() {
 	const { organization } = useOrganization();
@@ -30,8 +26,7 @@ export default function GroupsPage() {
 						{organization.name}
 					</h3>
 					<div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-						{/* Replace with Supabase query for groups where orgId === organization.id */}
-						{groups.map((g) => (
+						{groups.map((g: IGroup) => (
 							<GroupCard
 								key={g.id}
 								id={g.id}
