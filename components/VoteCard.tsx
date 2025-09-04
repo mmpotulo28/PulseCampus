@@ -1,15 +1,46 @@
-import { Card } from "@heroui/react";
+import { Button, Card } from "@heroui/react";
 import { motion, useAnimation } from "framer-motion";
 import { useState } from "react";
+import { useUser } from "@clerk/nextjs";
+import { useVoting } from "@/hooks/useVoting";
+import type { IThread, IUser } from "@/types";
 
 export interface VoteCardProps {
-	title: string;
+	thread: IThread;
 	disabled?: boolean;
 }
 
-export default function VoteCard({ title, disabled }: VoteCardProps) {
+export default function VoteCard({ thread, disabled = false }: VoteCardProps) {
 	const controls = useAnimation();
 	const [paused, setPaused] = useState(false);
+	const { user } = useUser();
+
+	const currentUser: IUser = {
+		id: user?.id || "",
+		name: user?.firstName || "Anonymous",
+		email: user?.emailAddresses?.[0]?.emailAddress || "",
+		role: (user?.publicMetadata?.role as string) || "Member",
+		avatarUrl: user?.imageUrl,
+	};
+
+	const {
+		votes,
+		userVote,
+		submitVote,
+		consensus,
+		votingFetchLoading,
+		votingFetchMessage,
+		votingFetchError,
+		votingCreateLoading,
+		votingCreateMessage,
+		votingCreateError,
+	} = useVoting({
+		threadId: thread.id || "",
+		user: currentUser,
+		votingType: "yesno",
+		anonymous: false,
+		weighted: true,
+	});
 
 	const handlePause = () => {
 		setPaused(true);
@@ -33,8 +64,8 @@ export default function VoteCard({ title, disabled }: VoteCardProps) {
 		<motion.div
 			animate={controls}
 			initial={{ rotate: 10 }}
-			onHoverStart={handlePause}
-			onHoverEnd={handleResume}
+			onMouseEnter={handlePause}
+			onMouseLeave={handleResume}
 			onFocus={handlePause}
 			onBlur={handleResume}
 			className="mx-auto origin-top w-full max-w-xs">
@@ -46,23 +77,53 @@ export default function VoteCard({ title, disabled }: VoteCardProps) {
 							Live
 						</span>
 					</div>
-					<div className="font-semibold text-lg mt-2">{title}</div>
+					<div className="font-semibold text-lg mt-2">{thread.title}</div>
 					<div className="flex gap-2 mt-4">
-						<button
-							className="bg-primary text-background px-4 py-2 rounded-full font-semibold hover:bg-secondary transition"
-							disabled={disabled}>
-							Yes
-						</button>
-						<button
+						<Button
+							isLoading={votingCreateLoading}
+							className="bg-primary text-background rounded-full font-semibold hover:bg-secondary transition"
+							onPress={() => submitVote("yes")}>
+							{votingCreateLoading && userVote === "yes" ? "Voting..." : "Yes"}
+						</Button>
+
+						<Button
+							isLoading={votingCreateLoading}
 							className="bg-background border border-primary px-4 py-2 rounded-full font-semibold text-primary hover:bg-primary hover:text-background transition"
-							disabled={disabled}>
-							No
-						</button>
+							onPress={() => submitVote("no")}>
+							{votingCreateLoading && userVote === "no" ? "Voting..." : "No"}
+						</Button>
 					</div>
 					<div className="mt-4 flex items-center gap-2 text-xs text-default-500">
 						<span className="rounded-full w-2 h-2 bg-success inline-block" />
 						<span>Real-time results</span>
 					</div>
+					{votingFetchLoading && (
+						<div className="mt-2 text-xs text-default-600">Loading votes...</div>
+					)}
+					{votingFetchError && (
+						<div className="mt-2 text-xs text-danger">{votingFetchError}</div>
+					)}
+					{votingFetchMessage && (
+						<div className="mt-2 text-xs text-success">{votingFetchMessage}</div>
+					)}
+					{votes && (
+						<div className="mt-2 text-xs text-default-600">
+							Yes: {votes["yes"] || 0} | No: {votes["no"] || 0}
+						</div>
+					)}
+					{votingCreateError && (
+						<div className="mt-2 text-xs text-danger">{votingCreateError}</div>
+					)}
+					{votingCreateMessage && (
+						<div className="mt-2 text-xs text-success">{votingCreateMessage}</div>
+					)}
+					{consensus && (
+						<div className="mt-2 text-xs">
+							Consensus: {consensus.reached ? "Reached" : "Not reached"} (
+							{Math.round(consensus.agreement)}% agreement,{" "}
+							{Math.round(consensus.engagement)}% engagement)
+						</div>
+					)}
 				</div>
 			</Card>
 		</motion.div>
