@@ -9,7 +9,10 @@ import { motion, useAnimation } from "framer-motion";
 import { useRef, useEffect } from "react";
 import { useInView } from "framer-motion";
 
-function AnimatedSection({ children, delay = 0 }) {
+const AnimatedSection: React.FC<{ children: React.ReactNode; delay?: number }> = ({
+	children,
+	delay = 0,
+}) => {
 	const ref = useRef(null);
 	const inView = useInView(ref, { once: false, margin: "-100px" });
 	const controls = useAnimation();
@@ -37,7 +40,7 @@ function AnimatedSection({ children, delay = 0 }) {
 			{children}
 		</motion.section>
 	);
-}
+};
 
 export default function Home() {
 	return (

@@ -6,6 +6,13 @@ import { siteConfig } from "@/config/site";
 import { Card } from "@heroui/react";
 import { motion } from "framer-motion";
 
+function scrollToFeatures() {
+	const el = document.getElementById("features");
+	if (el) {
+		el.scrollIntoView({ behavior: "smooth" });
+	}
+}
+
 export default function HeroSection() {
 	return (
 		<section className="flex flex-col md:flex-row items-center justify-between gap-8 py-12 md:py-20 container mx-auto">
@@ -59,22 +66,24 @@ export default function HeroSection() {
 					Centralized platform for proposals, voting, and engagement.
 				</div>
 				<div className="flex gap-3 mt-8">
+					<button
+						type="button"
+						className={buttonStyles({
+							color: "secondary",
+							radius: "full",
+							variant: "shadow",
+						})}
+						onClick={scrollToFeatures}>
+						Learn More
+					</button>
 					<Link
-						isExternal
 						className={buttonStyles({
 							color: "primary",
 							radius: "full",
 							variant: "shadow",
 						})}
-						href={siteConfig.links.docs}>
-						Documentation
-					</Link>
-					<Link
-						isExternal
-						className={buttonStyles({ variant: "bordered", radius: "full" })}
-						href={siteConfig.links.github}>
-						<GithubIcon size={20} />
-						GitHub
+						href="/auth/sign-in">
+						Get Started
 					</Link>
 				</div>
 				<div className="mt-6 text-sm text-default-500">

@@ -6,26 +6,27 @@ import * as React from "react";
 import { HeroUIProvider } from "@heroui/system";
 import { useRouter } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { ClerkProvider } from "@clerk/nextjs";
 
 export interface ProvidersProps {
-  children: React.ReactNode;
-  themeProps?: ThemeProviderProps;
+	children: React.ReactNode;
+	themeProps?: ThemeProviderProps;
 }
 
 declare module "@react-types/shared" {
-  interface RouterConfig {
-    routerOptions: NonNullable<
-      Parameters<ReturnType<typeof useRouter>["push"]>[1]
-    >;
-  }
+	interface RouterConfig {
+		routerOptions: NonNullable<Parameters<ReturnType<typeof useRouter>["push"]>[1]>;
+	}
 }
 
 export function Providers({ children, themeProps }: ProvidersProps) {
-  const router = useRouter();
+	const router = useRouter();
 
-  return (
-    <HeroUIProvider navigate={router.push}>
-      <NextThemesProvider {...themeProps}>{children}</NextThemesProvider>
-    </HeroUIProvider>
-  );
+	return (
+		<HeroUIProvider navigate={router.push}>
+			<ClerkProvider>
+				<NextThemesProvider {...themeProps}>{children}</NextThemesProvider>
+			</ClerkProvider>
+		</HeroUIProvider>
+	);
 }

@@ -31,7 +31,7 @@ const features = [
 
 export default function FeaturesSection() {
 	return (
-		<section className="py-8 md:py-12 flex flex-col items-center">
+		<section id="features" className="py-8 md:py-12 flex flex-col items-center">
 			<h2 className="text-2xl font-bold mb-6">Platform Features</h2>
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl w-full">
 				{features.map((feature) => (
