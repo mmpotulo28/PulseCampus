@@ -1,4 +1,4 @@
-import { Card } from "@heroui/react";
+import { Card, Tooltip } from "@heroui/react";
 import {
 	UserGroupIcon,
 	LockClosedIcon,
@@ -8,19 +8,16 @@ import {
 import { button as buttonStyles } from "@heroui/theme";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { IGroup } from "@/types";
 
 export interface GroupCardProps {
-	id: string;
-	name: string;
-	members: number;
-	isPublic: boolean;
-	activity: number; // e.g. % active members
+	group: IGroup;
 }
 
-export default function GroupCard({ id, name, members, isPublic, activity }: GroupCardProps) {
+export default function GroupCard({ group }: GroupCardProps) {
 	return (
 		<motion.div
-			animate={{ rotate: [2, -2, 2] }}
+			animate={{ rotate: [1, -1, 1] }}
 			transition={{
 				repeat: Infinity,
 				repeatType: "loop",
@@ -32,9 +29,9 @@ export default function GroupCard({ id, name, members, isPublic, activity }: Gro
 			<div className="flex flex-col p-0 gap-2 w-full">
 				<div className="flex items-center gap-3">
 					<UserGroupIcon className="h-7 w-7 text-primary" />
-					<h3 className="font-semibold text-lg">{name}</h3>
+					<h3 className="font-semibold text-lg text-nowrap truncate">{group.name}</h3>
 				</div>
-				{isPublic ? (
+				{group.isPublic ? (
 					<span className="flex items-center gap-1 text-success text-xs font-semibold ml-2">
 						<LockOpenIcon className="h-4 w-4" /> Public
 					</span>
@@ -46,20 +43,23 @@ export default function GroupCard({ id, name, members, isPublic, activity }: Gro
 			</div>
 			<div className="flex items-center gap-4 mt-2">
 				<span className="flex items-center gap-1 text-zinc-500 text-sm">
-					<UserGroupIcon className="h-4 w-4" /> {members} members
+					<UserGroupIcon className="h-4 w-4" /> {group.members} members
 				</span>
-				<span className="flex items-center gap-1 text-zinc-500 text-sm">
-					<ChartBarIcon className="h-4 w-4" /> {activity}% active
-				</span>
+				<Tooltip content="Percentage of active members in the last month">
+					<span className="flex items-center gap-1 text-zinc-500 text-sm">
+						<ChartBarIcon className="h-4 w-4" /> {group.activity}%
+					</span>
+				</Tooltip>
 			</div>
-			<div className="flex justify-end mt-0">
+			<div className="flex justify-end mt-0 w-full">
 				<Link
-					href={`/dashboard/groups/${id}`}
+					href={`/dashboard/groups/${group.id}`}
 					className={buttonStyles({
 						color: "secondary",
-						radius: "full",
+						radius: "sm",
 						variant: "shadow",
 						class: "font-bold",
+						size: "sm",
 					})}>
 					View Group
 				</Link>
