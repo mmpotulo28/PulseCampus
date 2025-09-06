@@ -3,6 +3,8 @@ import ThreadInsights from "@/components/ThreadInsights";
 import type { IVoteWithCounts, IThread } from "@/types";
 import { useUser } from "@clerk/nextjs";
 import { useNominations } from "@/hooks/useNominations";
+import { usePermissions } from "@/hooks/usePermissions";
+import Link from "next/link";
 import { useState } from "react";
 
 interface InsightsPanelProps {
@@ -15,6 +17,7 @@ export default function InsightsPanel({ votes, thread }: InsightsPanelProps) {
 	const { nominations, addNomination, addNominationLoading, addNominationSuccess } =
 		useNominations(thread.id || "");
 	const [nominated, setNominated] = useState(false);
+	const { isAdmin, isExco } = usePermissions();
 
 	const isMCQ = thread.vote_type === "mcq";
 
@@ -52,25 +55,35 @@ export default function InsightsPanel({ votes, thread }: InsightsPanelProps) {
 					<p className="text-sm text-default-600 mb-2 text-center">
 						Want to be considered for this vote? Nominate yourself as a candidate!
 					</p>
-					<Button
-						color="primary"
-						radius="full"
-						variant="shadow"
-						isLoading={addNominationLoading}
-						disabled={
-							addNominationLoading ||
-							nominated ||
-							nominations.some(
-								(n) =>
-									n.user_id === user?.id ||
-									n.email === user?.emailAddresses?.[0]?.emailAddress,
-							)
-						}
-						onPress={handleNominateSelf}>
-						{nominated || addNominationSuccess
-							? "You are nominated!"
-							: "Nominate Myself"}
-					</Button>
+					<div className="flex gap-4 items-center">
+						<Button
+							color="primary"
+							radius="full"
+							variant="shadow"
+							isLoading={addNominationLoading}
+							disabled={
+								addNominationLoading ||
+								nominated ||
+								nominations.some(
+									(n) =>
+										n.user_id === user?.id ||
+										n.email === user?.emailAddresses?.[0]?.emailAddress,
+								)
+							}
+							onPress={handleNominateSelf}>
+							{nominated || addNominationSuccess
+								? "You are nominated!"
+								: "Nominate Myself"}
+						</Button>
+						{(isAdmin || isExco) && (
+							<Link
+								href={`/dashboard/threads/${thread.id}/invite-nominee`}
+								className="bg-secondary text-background px-4 py-2 rounded-full font-semibold hover:bg-primary transition text-sm"
+								title="Invite a nominee to this thread">
+								Invite Nominee
+							</Link>
+						)}
+					</div>
 					{nominations.some(
 						(n) =>
 							n.user_id === user?.id ||

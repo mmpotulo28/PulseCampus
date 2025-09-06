@@ -1,4 +1,4 @@
-import { Button, Card } from "@heroui/react";
+import { Button, Card, Progress, Divider } from "@heroui/react";
 import { motion, useAnimation } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useVoting } from "@/hooks/useVoting";

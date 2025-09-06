@@ -1,15 +1,17 @@
 import { Card, Divider, Progress, Button } from "@heroui/react";
 import { ChartBarIcon } from "@heroicons/react/24/solid";
-import type { IThread, IVoteWithCounts } from "@/types";
+import type { INomination, IThread, IVoteWithCounts } from "@/types";
 import VoteCard from "@/components/threads/VoteCard";
 import MultipleVoteCard from "@/components/threads/MultipleVoteCard";
+import MultipleVoteInsights from "./MultipleVoteInsights";
 
 interface VotingSectionProps {
 	thread: IThread;
 	votes: IVoteWithCounts;
+	nominations?: INomination[];
 }
 
-export default function VotingSection({ thread, votes }: VotingSectionProps) {
+export default function VotingSection({ thread, votes, nominations }: VotingSectionProps) {
 	const totalVotes = Object.values(votes.voteCounts).reduce((a, b) => a + b, 0);
 	const isMCQ = thread.vote_type === "mcq";
 
@@ -57,6 +59,9 @@ export default function VotingSection({ thread, votes }: VotingSectionProps) {
 						color="secondary"
 					/>
 				</div>
+			)}
+			{isMCQ && nominations && (
+				<MultipleVoteInsights nominations={nominations} votes={votes} />
 			)}
 		</Card>
 	);

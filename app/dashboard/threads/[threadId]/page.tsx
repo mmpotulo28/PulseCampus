@@ -12,6 +12,7 @@ import ThreadHeader from "@/components/threads/ThreadHeader";
 import VotingSection from "@/components/threads/VotingSection";
 import CommentsSection from "@/components/threads/CommentsSection";
 import InsightsPanel from "@/components/threads/InsightsPanel";
+import { useNominations } from "@/hooks/useNominations";
 
 export default function ThreadDetailsPage() {
 	const { threadId } = useParams();
@@ -22,6 +23,8 @@ export default function ThreadDetailsPage() {
 		anonymous: false,
 		weighted: true,
 	});
+	const { nominations } = useNominations(thread?.id || "");
+
 	const { comments, commentsLoading, commentsError, fetchComments } = useComments(
 		thread?.id || "",
 	);
@@ -66,7 +69,7 @@ export default function ThreadDetailsPage() {
 			<div className="flex flex-col md:flex-row gap-8">
 				<div className="flex-2 flex flex-col gap-2">
 					<ThreadHeader thread={thread} />
-					<VotingSection thread={thread} votes={votes} />
+					<VotingSection thread={thread} votes={votes} nominations={nominations} />
 					<CommentsSection
 						comments={comments}
 						commentsLoading={commentsLoading}
