@@ -12,7 +12,7 @@ export default function CreateGroupPage() {
 	const [desc, setDesc] = useState("");
 	const [isPublic, setIsPublic] = useState(true);
 	const [activity, setActivity] = useState(0);
-	const [showInvite, setShowInvite] = useState(true);
+	const [showInvite, setShowInvite] = useState(false);
 
 	const { organization } = useOrganization();
 	const { createGroup, createLoading, createError, createSuccess, groups, group } = useGroup();
@@ -37,29 +37,34 @@ export default function CreateGroupPage() {
 
 	return (
 		<div className="py-8 px-4 max-w-4xl mx-auto flex flex-col md:flex-row gap-10 my-10">
-			{showInvite ? (
-				<InviteUsersToGroup group={group} />
-			) : (
-				<CreateGroupForm
-					name={name}
-					setName={setName}
-					desc={desc}
-					setDesc={setDesc}
-					isPublic={isPublic}
-					setIsPublic={setIsPublic}
-					activity={activity}
-					setActivity={setActivity}
-					orgId={orgId}
-					orgName={orgName}
-					isAdmin={isAdmin}
-					createGroup={createGroup}
-					createLoading={createLoading}
-					createError={createError}
-					createSuccess={createSuccess}
-					groups={groups}
-					handleSubmit={handleSubmit}
-				/>
-			)}
+			<div className="flex-2">
+				{showInvite ? (
+					<InviteUsersToGroup group={group} />
+				) : (
+					<CreateGroupForm
+						name={name}
+						setName={setName}
+						desc={desc}
+						setDesc={setDesc}
+						isPublic={isPublic}
+						setIsPublic={setIsPublic}
+						activity={activity}
+						setActivity={setActivity}
+						orgId={orgId}
+						orgName={orgName}
+						isAdmin={isAdmin}
+						createGroup={createGroup}
+						createLoading={createLoading}
+						createError={createError}
+						createSuccess={createSuccess}
+						groups={groups}
+						handleSubmit={handleSubmit}
+					/>
+				)}
+			</div>
+			<div className="w-full flex-1">
+				<OrganizationSidePanel isAdmin={isAdmin} groups={groups} />
+			</div>
 		</div>
 	);
 }

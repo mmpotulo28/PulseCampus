@@ -34,6 +34,10 @@ export function useGroup() {
 	const [updateError, setUpdateError] = useState<string | null>(null);
 	const [updateSuccess, setUpdateSuccess] = useState<string | null>(null);
 
+	const [deleteLoading, setDeleteLoading] = useState(false);
+	const [deleteError, setDeleteError] = useState<string | null>(null);
+	const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null);
+
 	const fetchGroups = useCallback(async () => {
 		setGroupsLoading(true);
 		setGroupsError(null);
@@ -213,6 +217,26 @@ export function useGroup() {
 		[fetchGroups, getGroup],
 	);
 
+	const deleteGroup = useCallback(
+		async (groupId: string) => {
+			setDeleteLoading(true);
+			setDeleteError(null);
+			setDeleteSuccess(null);
+
+			try {
+				const { error } = await supabase.from("groups").delete().eq("id", groupId);
+				if (error) throw error;
+				setDeleteSuccess("Group deleted successfully.");
+				await fetchGroups();
+			} catch (err: any) {
+				setDeleteError(err.message || "Failed to delete group");
+			} finally {
+				setDeleteLoading(false);
+			}
+		},
+		[fetchGroups],
+	);
+
 	return {
 		groups,
 		groupsLoading,
@@ -237,5 +261,10 @@ export function useGroup() {
 		updateLoading,
 		updateError,
 		updateSuccess,
+		// delete group
+		deleteGroup,
+		deleteLoading,
+		deleteError,
+		deleteSuccess,
 	};
 }
