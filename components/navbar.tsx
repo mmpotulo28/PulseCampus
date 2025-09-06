@@ -29,6 +29,7 @@ import {
 } from "@/components/icons";
 import { UserButton } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import { tabs } from "@/lib/data";
 
 // Custom nav items for PulseCampus
 const navItems = [
@@ -71,15 +72,15 @@ export const Navbar = () => {
 					</NextLink>
 				</NavbarBrand>
 				<ul className="hidden lg:flex gap-6 justify-start ml-4">
-					{navItems.map((item) => (
-						<NavbarItem key={item.href}>
+					{tabs.map((tab) => (
+						<NavbarItem key={tab.href}>
 							<NextLink
 								className={clsx(
 									linkStyles({ color: "foreground" }),
 									"text-background hover:text-secondary transition-colors font-medium",
 								)}
-								href={item.href}>
-								{item.label}
+								href={tab.href}>
+								{tab.label}
 							</NextLink>
 						</NavbarItem>
 					))}
@@ -109,6 +110,18 @@ export const Navbar = () => {
 						variant="flat">
 						Join Now
 					</Button>
+				</NavbarItem>
+				<NavbarItem className="hidden md:flex">
+					<UserButton
+						fallback={
+							<Avatar
+								size="sm"
+								onClick={() => {
+									router.push("/auth/sign-in");
+								}}
+							/>
+						}
+					/>
 				</NavbarItem>
 			</NavbarContent>
 

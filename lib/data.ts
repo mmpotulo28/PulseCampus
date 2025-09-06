@@ -1,203 +1,31 @@
-import type { IGroup, IUser, IThread } from "@/types";
+import {
+	ChatBubbleLeftRightIcon,
+	ChartBarIcon,
+	Cog6ToothIcon,
+	HomeIcon,
+	UserGroupIcon,
+} from "@heroicons/react/24/outline";
+import { ForwardRefExoticComponent, SVGProps, RefAttributes } from "react";
 
-export const groups: IGroup[] = [
-	{
-		id: "1",
-		name: "Tech Society",
-		description: "A group for tech enthusiasts to collaborate, learn, and innovate on campus.",
-		members: 24,
-		isPublic: true,
-		activity: 80,
-		createdAt: "2023-09-01",
-		owner: "Anele M.",
-		membersList: [
-			{ name: "Anele M.", role: "President" },
-			{ name: "Thandi S.", role: "Treasurer" },
-			{ name: "Sipho N.", role: "Member" },
-			{ name: "Lebo D.", role: "Member" },
-			{ name: "Sam K.", role: "Member" },
-		],
-	},
-	{
-		id: "2",
-		name: "Law Council",
-		description: "The official council for law students, organizing events and advocacy.",
-		members: 12,
-		isPublic: false,
-		activity: 65,
-		createdAt: "2023-08-15",
-		owner: "Thandi S.",
-		membersList: [
-			{ name: "Thandi S.", role: "Chair" },
-			{ name: "Sipho N.", role: "Secretary" },
-			{ name: "Lebo D.", role: "Member" },
-		],
-	},
-	{
-		id: "3",
-		name: "Green Campus Initiative",
-		description: "Promoting sustainability and green practices across campus.",
-		members: 18,
-		isPublic: true,
-		activity: 72,
-		createdAt: "2023-07-20",
-		owner: "Sipho N.",
-		membersList: [
-			{ name: "Sipho N.", role: "Coordinator" },
-			{ name: "Anele M.", role: "Member" },
-			{ name: "Thandi S.", role: "Member" },
-		],
-	},
-	{
-		id: "4",
-		name: "Art Collective",
-		description: "A creative space for artists to share, exhibit, and collaborate.",
-		members: 15,
-		isPublic: false,
-		activity: 60,
-		createdAt: "2023-06-10",
-		owner: "Lebo D.",
-		membersList: [
-			{ name: "Lebo D.", role: "Lead Artist" },
-			{ name: "Sam K.", role: "Curator" },
-			{ name: "Thandi S.", role: "Member" },
-		],
-	},
-	{
-		id: "5",
-		name: "Entrepreneurship Hub",
-		description: "Supporting student startups and entrepreneurial projects.",
-		members: 30,
-		isPublic: true,
-		activity: 90,
-		createdAt: "2023-05-05",
-		owner: "Sam K.",
-		membersList: [
-			{ name: "Sam K.", role: "Founder" },
-			{ name: "Anele M.", role: "Co-Founder" },
-			{ name: "Sipho N.", role: "Member" },
-		],
-	},
-	{
-		id: "6",
-		name: "Health & Wellness Club",
-		description: "Promoting health, wellness, and fitness among students.",
-		members: 20,
-		isPublic: true,
-		activity: 75,
-		createdAt: "2023-04-12",
-		owner: "Thandi S.",
-		membersList: [
-			{ name: "Thandi S.", role: "President" },
-			{ name: "Lebo D.", role: "Secretary" },
-			{ name: "Sam K.", role: "Member" },
-		],
-	},
-];
+export interface ITab {
+	label: string;
+	href: string;
+	icon: ForwardRefExoticComponent<
+		Omit<SVGProps<SVGSVGElement>, "ref"> & {
+			title?: string | undefined;
+			titleId?: string | undefined;
+		} & RefAttributes<SVGSVGElement>
+	>;
+}
 
-export const users: IUser[] = [
+export const tabs: ITab[] = [
+	{ label: "Home", href: "/", icon: HomeIcon },
+	{ label: "Groups", href: "/dashboard/groups", icon: UserGroupIcon },
 	{
-		id: "u1",
-		name: "Anele M.",
-		email: "anele@campus.edu",
-		role: "President",
-		avatarUrl: "https://randomuser.me/api/portraits/men/32.jpg",
+		label: "Threads",
+		href: "/dashboard/threads",
+		icon: ChatBubbleLeftRightIcon,
 	},
-	{
-		id: "u2",
-		name: "Thandi S.",
-		email: "thandi@campus.edu",
-		role: "Treasurer",
-		avatarUrl: "https://randomuser.me/api/portraits/women/44.jpg",
-	},
-	{
-		id: "u3",
-		name: "Sipho N.",
-		email: "sipho@campus.edu",
-		role: "Member",
-		avatarUrl: "https://randomuser.me/api/portraits/men/65.jpg",
-	},
-	{
-		id: "u4",
-		name: "Lebo D.",
-		email: "lebo@campus.edu",
-		role: "Member",
-		avatarUrl: "https://randomuser.me/api/portraits/women/68.jpg",
-	},
-	{
-		id: "u5",
-		name: "Sam K.",
-		email: "sam@campus.edu",
-		role: "Member",
-		avatarUrl: "https://randomuser.me/api/portraits/men/77.jpg",
-	},
-	{
-		id: "u6",
-		name: "Zanele P.",
-		email: "zanele@campus.edu",
-		role: "Member",
-		avatarUrl: "https://randomuser.me/api/portraits/women/12.jpg",
-	},
-	{
-		id: "u7",
-		name: "Musa T.",
-		email: "musa@campus.edu",
-		role: "Member",
-		avatarUrl: "https://randomuser.me/api/portraits/men/23.jpg",
-	},
-	{
-		id: "u8",
-		name: "Nandi M.",
-		email: "nandi@campus.edu",
-		role: "Member",
-		avatarUrl: "https://randomuser.me/api/portraits/women/33.jpg",
-	},
-	{
-		id: "u9",
-		name: "Kabelo R.",
-		email: "kabelo@campus.edu",
-		role: "Member",
-		avatarUrl: "https://randomuser.me/api/portraits/men/45.jpg",
-	},
-	{
-		id: "u10",
-		name: "Sibongile H.",
-		email: "sibongile@campus.edu",
-		role: "Member",
-		avatarUrl: "https://randomuser.me/api/portraits/women/55.jpg",
-	},
-];
-
-export const threads: IThread[] = [
-	{
-		id: "1",
-		groupId: "1",
-		creatorId: "u1",
-		title: "Spring Festival Proposal",
-		description:
-			"Should we host a Spring Festival this year? All members are invited to vote and discuss.",
-		status: "Open",
-		createdAt: "2024-06-01",
-		deadline: "2024-06-15",
-		votes: { yes: 18, no: 6 },
-		totalMembers: 24,
-		comments: [
-			{ userId: "u1", text: "Great idea! Let's do it." },
-			{ userId: "u2", text: "Will we have enough budget?" },
-		],
-	},
-	{
-		id: "2",
-		groupId: "1",
-		creatorId: "u2",
-		title: "Budget Approval",
-		description: "Approve the annual budget for Tech Society.",
-		status: "Closed",
-		createdAt: "2024-05-10",
-		deadline: "2024-05-20",
-		votes: { yes: 10, no: 2 },
-		totalMembers: 12,
-		comments: [{ userId: "u3", text: "Budget looks good!" }],
-	},
-	// Add more threads as needed
+	{ label: "Metrics", href: "/dashboard/metrics", icon: ChartBarIcon },
+	{ label: "Settings", href: "/settings", icon: Cog6ToothIcon },
 ];

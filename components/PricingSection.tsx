@@ -29,14 +29,13 @@ const tiers = [
 
 export default function PricingSection() {
 	return (
-		<section className="py-12 flex flex-col items-center bg-violet-50 dark:bg-zinc-900">
+		<section className="py-12 flex flex-col items-center ">
 			<h2 className="text-2xl font-bold mb-8">Pricing for Every Student Group</h2>
 			<div className="flex flex-col md:flex-row gap-8 justify-center">
 				{tiers.map((tier) => (
 					<Card
 						key={tier.name}
 						className={`p-8 rounded-2xl shadow-lg min-w-[220px] transition-all duration-300
-							bg-white dark:bg-zinc-800
 							${tier.highlight ? "border-2 border-primary scale-105 z-10" : "border border-default-200"}
 							hover:scale-105 hover:shadow-xl`}>
 						<div className="flex flex-col items-center mb-4">

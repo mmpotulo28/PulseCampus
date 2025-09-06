@@ -1,41 +1,65 @@
 "use client";
 import { useState } from "react";
-import { button as buttonStyles } from "@heroui/theme";
-import { Input } from "@heroui/input";
+import { useOrganization } from "@clerk/nextjs";
+import { useGroup } from "@/hooks/useGroup";
+import { usePermissions } from "@/hooks/usePermissions";
+import { useRouter } from "next/navigation";
+import { CreateGroupForm, OrganizationSidePanel } from "../components";
+import { InviteUsersToGroup } from "../components";
 
 export default function CreateGroupPage() {
 	const [name, setName] = useState("");
-	const [loading, setLoading] = useState(false);
+	const [desc, setDesc] = useState("");
+	const [isPublic, setIsPublic] = useState(true);
+	const [activity, setActivity] = useState(0);
+	const [showInvite, setShowInvite] = useState(true);
+
+	const { organization } = useOrganization();
+	const { createGroup, createLoading, createError, createSuccess, groups, group } = useGroup();
+	const { isAdmin } = usePermissions();
+	const router = useRouter();
+
+	const orgName = organization?.name || "";
+	const orgId = organization?.id || "";
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		setLoading(true);
-		// TODO: Integrate with Supabase to create group
-		setTimeout(() => setLoading(false), 1000);
+		if (!isAdmin || !orgId) return;
+		if (name.length < 3 || desc.length < 10) return;
+		if (groups.some((g) => g.name.toLowerCase() === name.toLowerCase())) return;
+		await createGroup(name, desc, isPublic, activity);
 	};
 
+	// Redirect after success and show invite UI
+	if (createSuccess && !createLoading && !createError && !showInvite) {
+		setShowInvite(true);
+	}
+
 	return (
-		<div className="py-8 px-4 max-w-md mx-auto">
-			<h2 className="text-xl font-bold mb-4">Create a New Group</h2>
-			<form onSubmit={handleSubmit} className="flex flex-col gap-4">
-				<Input
-					label="Group Name"
-					value={name}
-					onChange={(e) => setName(e.target.value)}
-					placeholder="e.g. Tech Society"
-					required
+		<div className="py-8 px-4 max-w-4xl mx-auto flex flex-col md:flex-row gap-10 my-10">
+			{showInvite ? (
+				<InviteUsersToGroup group={group} />
+			) : (
+				<CreateGroupForm
+					name={name}
+					setName={setName}
+					desc={desc}
+					setDesc={setDesc}
+					isPublic={isPublic}
+					setIsPublic={setIsPublic}
+					activity={activity}
+					setActivity={setActivity}
+					orgId={orgId}
+					orgName={orgName}
+					isAdmin={isAdmin}
+					createGroup={createGroup}
+					createLoading={createLoading}
+					createError={createError}
+					createSuccess={createSuccess}
+					groups={groups}
+					handleSubmit={handleSubmit}
 				/>
-				<button
-					type="submit"
-					disabled={loading || !name}
-					className={buttonStyles({
-						color: "primary",
-						radius: "full",
-						variant: "shadow",
-					})}>
-					{loading ? "Creating..." : "Create Group"}
-				</button>
-			</form>
+			)}
 		</div>
 	);
 }

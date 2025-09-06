@@ -28,7 +28,7 @@ export default function ThreadInsights({ yesVotes, noVotes, totalMembers }: Thre
 	const engagement = Math.round(((yesVotes + noVotes) / totalMembers) * 100);
 
 	return (
-		<Card className="p-6 rounded-2xl shadow-lg bg-background dark:bg-zinc-800 flex flex-col gap-6">
+		<Card className="p-6 rounded-2xl shadow-xl bg-gradient-to-br from-primary/10 via-background to-secondary/10 dark:bg-zinc-800 flex flex-col gap-6 border-2 border-primary/20">
 			<h3 className="text-lg font-bold mb-2 flex items-center gap-2">
 				<ChartBarIcon className="h-6 w-6 text-primary" />
 				Thread Insights

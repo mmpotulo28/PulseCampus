@@ -9,18 +9,7 @@ import {
 	Cog6ToothIcon,
 } from "@heroicons/react/24/solid";
 import clsx from "clsx";
-
-const tabs = [
-	{ label: "Home", href: "/", icon: <HomeIcon className="h-6 w-6" /> },
-	{ label: "Groups", href: "/dashboard/groups", icon: <UserGroupIcon className="h-6 w-6" /> },
-	{
-		label: "Threads",
-		href: "/dashboard/threads",
-		icon: <ChatBubbleLeftRightIcon className="h-6 w-6" />,
-	},
-	{ label: "Metrics", href: "/dashboard/metrics", icon: <ChartBarIcon className="h-6 w-6" /> },
-	{ label: "Settings", href: "/settings", icon: <Cog6ToothIcon className="h-6 w-6" /> },
-];
+import { tabs } from "@/lib/data";
 
 export default function MobileTabs() {
 	const pathname = usePathname();
@@ -41,7 +30,7 @@ export default function MobileTabs() {
 								: "text-default-500 hover:text-primary",
 						)}
 						aria-label={tab.label}>
-						{tab.icon}
+						{tab.icon && <tab.icon className="h-6 w-6" />}
 						<span
 							className={clsx("text-xs mt-1", active ? "font-bold" : "font-normal")}>
 							{tab.label}

@@ -10,7 +10,7 @@ import { Divider } from "@heroui/react";
 
 export default function GroupsPage() {
 	const { organization } = useOrganization();
-	const { groups, groupsLoading, groupsError } = useGroup(organization?.id || "");
+	const { groups, groupsLoading, groupsError } = useGroup();
 
 	if (groupsLoading) return <div>Loading...</div>;
 	if (groupsError) return <div>Error loading groups</div>;
