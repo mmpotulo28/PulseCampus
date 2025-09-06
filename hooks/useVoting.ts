@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, use } from "react";
 import { createClient, REALTIME_LISTEN_TYPES } from "@supabase/supabase-js";
 import type { IConsensus, IUseVotingOptions, IVote, IVoteWithCounts } from "@/types";
 import { useUser } from "@clerk/nextjs";
@@ -59,6 +59,14 @@ export function useVoting({
 		setVotingFetchLoading(true);
 		setVotingFetchMessage(null);
 		setVotingFetchError(null);
+
+		if (!thread_id) {
+			setVotes({ votes: [], voteCounts: {} });
+			setVotingFetchLoading(false);
+			setVotingFetchError("No thread_id provided");
+			return;
+		}
+
 		try {
 			const { data, error } = (await supabase
 				.from("votes")
@@ -95,6 +103,12 @@ export function useVoting({
 		}
 		setVotingFetchLoading(false);
 	}, [thread_id, weighted]);
+
+	useEffect(() => {
+		if (thread_id && user) {
+			fetchVotes();
+		}
+	}, [thread_id, user, fetchVotes]);
 
 	// Fetch votes in real-time
 	useEffect(() => {
@@ -169,7 +183,7 @@ export function useVoting({
 					setVotingCreateMessage("Vote submitted successfully.");
 				}
 
-				fetchVotes();
+				// fetchVotes();
 			} catch (err: any) {
 				console.error("SubmitVote exception:", err); // Added for debugging
 				setVotingCreateError(err.message || "errored");
@@ -190,7 +204,7 @@ export function useVoting({
 			: 0;
 		const reached = agreement >= 70 && engagement >= 50;
 		setConsensus({ agreement, engagement, reached, yesVotes, noVotes, totalVotes });
-	}, [votes?.voteCounts]);
+	}, [votes?.voteCounts, thread_id, votes.votes]);
 
 	return {
 		votes,

@@ -4,12 +4,16 @@ import { useOrganization, OrganizationSwitcher } from "@clerk/nextjs";
 import { UserGroupIcon, BuildingLibraryIcon } from "@heroicons/react/24/solid";
 import { button as buttonStyles } from "@heroui/theme";
 import GroupCard from "@/components/GroupCard";
-import { groups } from "@/lib/data";
+import { useGroup } from "@/hooks/useGroup";
 import type { IGroup } from "@/types";
 import { Divider } from "@heroui/react";
 
 export default function GroupsPage() {
 	const { organization } = useOrganization();
+	const { groups, groupsLoading, groupsError } = useGroup(organization?.id || "");
+
+	if (groupsLoading) return <div>Loading...</div>;
+	if (groupsError) return <div>Error loading groups</div>;
 
 	return (
 		<div className="py-8 px-4 max-w-3xl mx-auto">

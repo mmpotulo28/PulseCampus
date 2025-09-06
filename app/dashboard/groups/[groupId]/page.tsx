@@ -1,7 +1,7 @@
 "use client";
 import { useParams } from "next/navigation";
-import { groups, threads } from "@/lib/data";
-import type { IGroup } from "@/types";
+import { useGroup } from "@/hooks/useGroup";
+import { useThreads } from "@/hooks/useThreads";
 import { Card, Tooltip, Divider, ScrollShadow, User } from "@heroui/react";
 import {
 	UserGroupIcon,
@@ -13,12 +13,21 @@ import {
 } from "@heroicons/react/24/solid";
 import Link from "next/link";
 import { button as buttonStyles } from "@heroui/theme";
+import { useOrganization } from "@clerk/nextjs";
+import { useEffect } from "react";
 
 export default function GroupDetailsPage() {
 	const { groupId } = useParams();
-	const group = groups.find((g: IGroup) => g.id === groupId);
+	const { organization } = useOrganization();
+	const { group, getGroupError, getGroupLoading, getGroup } = useGroup(organization?.id || "");
+	const { threads } = useThreads(groupId as string);
 
-	if (!group) {
+	useEffect(() => {
+		getGroup(groupId as string);
+	}, [groupId, organization]);
+
+	if (getGroupLoading) return <div>Loading...</div>;
+	if (getGroupError || !group) {
 		return (
 			<div className="py-12 px-4 max-w-2xl mx-auto text-center">
 				<h2 className="text-2xl font-bold mb-4 text-danger">Group Not Found</h2>
@@ -101,7 +110,6 @@ export default function GroupDetailsPage() {
 					<div>
 						<h2 className="text-lg font-bold mb-4">Recent Proposals & Threads</h2>
 						<ul className="space-y-3">
-							{/* TODO: Replace with actual threads for this group */}
 							{threads.slice(0, 3).map((thread) => (
 								<li className="p-4 rounded-xl bg-background dark:bg-zinc-800 shadow flex justify-between items-center">
 									<span
@@ -154,7 +162,7 @@ export default function GroupDetailsPage() {
 						<div className="flex flex-col gap-2 text-sm">
 							<div>
 								<span className="font-semibold">Created:</span>{" "}
-								{new Date(group.createdAt).toLocaleDateString()}
+								{new Date(group.createdAt || "").toLocaleDateString()}
 							</div>
 							<div className="flex items-center gap-2">
 								<span className="font-semibold">Owner:</span>
@@ -170,7 +178,7 @@ export default function GroupDetailsPage() {
 						<h4 className="font-semibold mb-2">Members</h4>
 						<ScrollShadow className="h-70 w-full rounded-2xl dark:bg-zinc-900 border border-default-200">
 							<ul className="divide-y divide-default-100">
-								{group.membersList.map((m, idx) => (
+								{group.membersList?.map((m, idx) => (
 									<li
 										key={idx}
 										className="flex items-center gap-2 py-2 px-2 w-full">

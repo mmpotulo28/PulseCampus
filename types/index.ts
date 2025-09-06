@@ -6,14 +6,15 @@ export type IconSvgProps = SVGProps<SVGSVGElement> & {
 
 export interface IGroup {
 	id: string;
+	orgId: string; // Organization ID
 	name: string;
-	description: string;
-	members: number;
-	isPublic: boolean;
-	activity: number; // % active members
-	createdAt: string; // ISO date string
-	owner: string; // Owner name or user id
-	membersList: { name: string; role: string }[]; // Array of member objects
+	description?: string;
+	members?: number;
+	isPublic?: boolean;
+	activity?: number;
+	createdAt?: string;
+	owner?: string;
+	membersList?: { name: string; role: string }[];
 }
 
 export interface IUser {
@@ -79,16 +80,16 @@ export interface IUser {
 
 export interface IThread {
 	id: string;
-	groupId: string;
-	creatorId: string;
+	groupId: string; // Group ID
+	creatorId?: string;
 	title: string;
-	description: string;
-	status: "Open" | "Closed";
-	createdAt: string;
-	deadline: string;
-	votes: { yes: number; no: number };
-	totalMembers: number;
-	comments: { userId: string; text: string }[];
+	description?: string;
+	status?: string;
+	createdAt?: string;
+	deadline?: string;
+	votes?: Record<string, number>;
+	totalMembers?: number;
+	comments?: { userId: string; text: string }[];
 }
 export interface IVoteOption {
 	id: string;
@@ -104,7 +105,7 @@ export interface IUseVotingOptions {
 
 export interface IVote {
 	id?: string;
-	thread_id: string;
+	thread_id: string; // Thread ID
 	user_id: string | null;
 	vote: string | string[];
 	weight: number;
@@ -124,4 +125,12 @@ export interface IConsensus {
 	yesVotes: number;
 	noVotes: number;
 	totalVotes: number;
+}
+
+export interface IComment {
+	id: string;
+	thread_id: string;
+	user_id: string;
+	text: string;
+	created_at?: string;
 }

@@ -10,23 +10,57 @@ import {
 	CheckCircleIcon,
 	XCircleIcon,
 } from "@heroicons/react/24/solid";
-import { threads, users } from "@/lib/data";
-import type { IThread, IUser } from "@/types";
-import VoteCard from "@/components/VoteCard";
-import ThreadInsights from "@/components/ThreadInsights";
+import { useThreads } from "@/hooks/useThreads";
+import { useComments } from "@/hooks/useComments";
 import { useVoting } from "@/hooks/useVoting";
 import { useUser } from "@clerk/nextjs";
+import ThreadInsights from "@/components/ThreadInsights";
+import VoteCard from "@/components/VoteCard";
+import { useEffect } from "react";
 
 export default function ThreadDetailsPage() {
 	const { threadId } = useParams();
-	const { user } = useUser();
-	const thread = threads.find((t) => t.id === threadId);
-
+	useUser();
+	const { getThread, threadError, threadLoading, thread } = useThreads();
 	const { votes } = useVoting({
 		thread_id: thread?.id || "",
 		anonymous: false,
 		weighted: true,
 	});
+
+	const { comments, commentsLoading, commentsError, fetchComments } = useComments(
+		thread?.id || "",
+	);
+
+	useEffect(() => {
+		getThread(threadId as string);
+	}, [threadId]);
+
+	useEffect(() => {
+		fetchComments();
+	}, [thread]);
+
+	if (threadLoading) return <div>Loading...</div>;
+	if (threadError) {
+		return (
+			<div className="py-12 px-4 max-w-2xl mx-auto text-center">
+				<h2 className="text-2xl font-bold mb-4 text-danger">Thread Not Found</h2>
+				<p className="text-zinc-500">
+					The proposal or thread you are looking for does not exist.
+				</p>
+				<Link
+					href="/dashboard/threads"
+					className={buttonStyles({
+						color: "primary",
+						radius: "full",
+						variant: "shadow",
+						class: "mt-6",
+					})}>
+					Back to Threads
+				</Link>
+			</div>
+		);
+	}
 
 	if (!thread) {
 		return (
@@ -50,7 +84,7 @@ export default function ThreadDetailsPage() {
 	}
 
 	const totalVotes = votes.voteCounts.yes + votes.voteCounts.no;
-	const pulseScore = Math.round((totalVotes / thread.totalMembers) * 100);
+	const pulseScore = Math.round((totalVotes / (thread?.totalMembers || 0)) * 100);
 
 	return (
 		<div className="py-8 px-4 max-w-7xl mx-auto">
@@ -68,14 +102,14 @@ export default function ThreadDetailsPage() {
 									<Tooltip content="Thread created date">
 										<span className="flex items-center gap-1">
 											<ClockIcon className="h-4 w-4 text-primary" />
-											{new Date(thread.createdAt).toLocaleDateString()}
+											{new Date(thread.createdAt || "").toLocaleDateString()}
 										</span>
 									</Tooltip>
 									<Tooltip content="Voting deadline">
 										<span className="flex items-center gap-1">
 											<ClockIcon className="h-4 w-4 text-secondary" />
 											Deadline:{" "}
-											{new Date(thread.deadline).toLocaleDateString()}
+											{new Date(thread.deadline || "").toLocaleDateString()}
 										</span>
 									</Tooltip>
 									<Tooltip content="Thread status">
@@ -115,7 +149,6 @@ export default function ThreadDetailsPage() {
 						{/* Voting UI */}
 						<div>
 							<h2 className="text-lg font-bold mb-2">Votes on this Proposal</h2>
-
 							<Progress
 								value={
 									totalVotes
@@ -143,19 +176,21 @@ export default function ThreadDetailsPage() {
 						{/* Comments Section */}
 						<div>
 							<h2 className="text-lg font-bold mb-2">Comments & Discussion</h2>
-							<ul className="space-y-3">
-								{thread.comments.map((c, idx) => {
-									const user = users.find((u) => u.id === c.userId);
-									return (
+							{commentsLoading ? (
+								<div>Loading comments...</div>
+							) : commentsError ? (
+								<div>Error loading comments</div>
+							) : (
+								<ul className="space-y-3">
+									{comments.map((c, idx) => (
 										<li
-											key={idx}
+											key={c.id || idx}
 											className="flex items-center gap-3 p-3 rounded-xl bg-background dark:bg-zinc-800 shadow">
 											<User
-												name={user?.fullName || "Unknown"}
-												description={user?.publicMetadata?.role || "Member"}
+												name={c.user_id || "Unknown"}
+												description={"Member"}
 												avatarProps={{
-													src: user?.imageUrl,
-													name: user?.fullName || "Unknown",
+													name: c.user_id || "Unknown",
 													className:
 														"bg-primary text-background font-bold",
 												}}
@@ -166,9 +201,9 @@ export default function ThreadDetailsPage() {
 												</p>
 											</div>
 										</li>
-									);
-								})}
-							</ul>
+									))}
+								</ul>
+							)}
 						</div>
 
 						{/* Actions */}
@@ -190,7 +225,7 @@ export default function ThreadDetailsPage() {
 					<ThreadInsights
 						yesVotes={votes?.voteCounts.yes}
 						noVotes={votes?.voteCounts.no}
-						totalMembers={thread.totalMembers}
+						totalMembers={thread?.totalMembers || 0}
 					/>
 				</div>
 			</div>
