@@ -1,9 +1,8 @@
 import { Button, Card } from "@heroui/react";
 import { motion, useAnimation } from "framer-motion";
 import { useState } from "react";
-import { useUser } from "@clerk/nextjs";
 import { useVoting } from "@/hooks/useVoting";
-import type { IThread, IUser } from "@/types";
+import type { IThread } from "@/types";
 
 export interface VoteCardProps {
 	thread: IThread;
@@ -13,15 +12,6 @@ export interface VoteCardProps {
 export default function VoteCard({ thread, disabled = false }: VoteCardProps) {
 	const controls = useAnimation();
 	const [paused, setPaused] = useState(false);
-	const { user } = useUser();
-
-	const currentUser: IUser = {
-		id: user?.id || "",
-		name: user?.firstName || "Anonymous",
-		email: user?.emailAddresses?.[0]?.emailAddress || "",
-		role: (user?.publicMetadata?.role as string) || "Member",
-		avatarUrl: user?.imageUrl,
-	};
 
 	const {
 		votes,
@@ -35,9 +25,7 @@ export default function VoteCard({ thread, disabled = false }: VoteCardProps) {
 		votingCreateMessage,
 		votingCreateError,
 	} = useVoting({
-		threadId: thread.id || "",
-		user: currentUser,
-		votingType: "yesno",
+		thread_id: thread.id || "",
 		anonymous: false,
 		weighted: true,
 	});
@@ -106,11 +94,11 @@ export default function VoteCard({ thread, disabled = false }: VoteCardProps) {
 					{votingFetchMessage && (
 						<div className="mt-2 text-xs text-success">{votingFetchMessage}</div>
 					)}
-					{votes && (
-						<div className="mt-2 text-xs text-default-600">
-							Yes: {votes["yes"] || 0} | No: {votes["no"] || 0}
-						</div>
-					)}
+
+					<div className="mt-2 text-xs text-default-600">
+						Yes: {votes.voteCounts["yes"] || 0} | No: {votes.voteCounts["no"] || 0}
+					</div>
+
 					{votingCreateError && (
 						<div className="mt-2 text-xs text-danger">{votingCreateError}</div>
 					)}

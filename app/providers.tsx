@@ -7,6 +7,7 @@ import { HeroUIProvider } from "@heroui/system";
 import { useRouter } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { ClerkProvider } from "@clerk/nextjs";
+import { clerkConfig } from "@/lib/config/clerk";
 
 export interface ProvidersProps {
 	children: React.ReactNode;
@@ -24,7 +25,7 @@ export function Providers({ children, themeProps }: ProvidersProps) {
 
 	return (
 		<HeroUIProvider navigate={router.push}>
-			<ClerkProvider>
+			<ClerkProvider appearance={clerkConfig.appearance}>
 				<NextThemesProvider {...themeProps}>{children}</NextThemesProvider>
 			</ClerkProvider>
 		</HeroUIProvider>

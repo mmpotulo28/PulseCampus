@@ -23,15 +23,7 @@ export default function ThreadDetailsPage() {
 	const thread = threads.find((t) => t.id === threadId);
 
 	const { votes } = useVoting({
-		threadId: thread?.id || "",
-		user: {
-			id: user?.id || "",
-			name: user?.firstName || "Anonymous",
-			email: user?.emailAddresses?.[0]?.emailAddress || "",
-			role: (user?.publicMetadata?.role as string) || "Member",
-			avatarUrl: user?.imageUrl,
-		} as IUser,
-		votingType: "yesno",
+		thread_id: thread?.id || "",
 		anonymous: false,
 		weighted: true,
 	});
@@ -57,7 +49,7 @@ export default function ThreadDetailsPage() {
 		);
 	}
 
-	const totalVotes = votes.yes + votes.no;
+	const totalVotes = votes.voteCounts.yes + votes.voteCounts.no;
 	const pulseScore = Math.round((totalVotes / thread.totalMembers) * 100);
 
 	return (
@@ -125,13 +117,21 @@ export default function ThreadDetailsPage() {
 							<h2 className="text-lg font-bold mb-2">Votes on this Proposal</h2>
 
 							<Progress
-								value={totalVotes ? Math.round((votes.yes / totalVotes) * 100) : 0}
+								value={
+									totalVotes
+										? Math.round((votes.voteCounts.yes / totalVotes) * 100)
+										: 0
+								}
 								label="Yes votes"
 								className="mb-2"
 								color="primary"
 							/>
 							<Progress
-								value={totalVotes ? Math.round((votes.no / totalVotes) * 100) : 0}
+								value={
+									totalVotes
+										? Math.round((votes.voteCounts.no / totalVotes) * 100)
+										: 0
+								}
 								label="No votes"
 								className="mb-2"
 								color="secondary"
@@ -151,11 +151,11 @@ export default function ThreadDetailsPage() {
 											key={idx}
 											className="flex items-center gap-3 p-3 rounded-xl bg-background dark:bg-zinc-800 shadow">
 											<User
-												name={user?.name || "Unknown"}
-												description={user?.role}
+												name={user?.fullName || "Unknown"}
+												description={user?.publicMetadata?.role || "Member"}
 												avatarProps={{
-													src: user?.avatarUrl,
-													name: user?.name,
+													src: user?.imageUrl,
+													name: user?.fullName || "Unknown",
 													className:
 														"bg-primary text-background font-bold",
 												}}
@@ -188,8 +188,8 @@ export default function ThreadDetailsPage() {
 				{/* Side Insights Panel */}
 				<div className="w-full md:w-80 flex-1">
 					<ThreadInsights
-						yesVotes={votes.yes}
-						noVotes={votes.no}
+						yesVotes={votes?.voteCounts.yes}
+						noVotes={votes?.voteCounts.no}
 						totalMembers={thread.totalMembers}
 					/>
 				</div>

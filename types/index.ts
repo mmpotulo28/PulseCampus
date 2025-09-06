@@ -18,10 +18,63 @@ export interface IGroup {
 
 export interface IUser {
 	id: string;
-	name: string;
-	email: string;
-	role: string;
-	avatarUrl?: string;
+	fullName: string;
+	object: "user";
+	hasImage: boolean;
+	imageUrl: string;
+	primaryEmailAddressId: string;
+	passwordEnabled: boolean;
+	passkeys: any[];
+	twoFactorEnabled: boolean;
+	emailAddresses: {
+		id: string;
+		object: "email_address";
+		emailAddress: string;
+		verification: {
+			status: string;
+			strategy: string;
+			attempts: number;
+			expireAt: number;
+			error: string | null;
+		};
+		linkedTo: any[];
+		createdAt: number;
+		updatedAt: number;
+	}[];
+	phoneNumbers: any[];
+	web3Wallets: any[];
+	externalAccounts: {
+		id: string;
+		object: string;
+		provider: string;
+		identificationId: string;
+		providerUserId: string;
+		approvedScopes: string;
+		emailAddress: string;
+		firstName: string;
+		lastName: string;
+		avatarUrl: string;
+		publicMetadata: Record<string, any>;
+		createdAt: number;
+		updatedAt: number;
+	}[];
+	enterpriseAccounts: any[];
+	publicMetadata: Record<string, any>;
+	privateMetadata: Record<string, any>;
+	unsafeMetadata: Record<string, any>;
+	lastSignInAt: number;
+	lastActiveAt: number;
+	createdAt: number;
+	updatedAt: number;
+	banned: boolean;
+	locked: boolean;
+	lockoutExpiresInSeconds: number | null;
+	deleteSelfEnabled: boolean;
+	createOrganizationEnabled: boolean;
+	createOrganizationsLimit: number;
+	totpEnabled: boolean;
+	backupCodeEnabled: boolean;
+	legalAcceptedAt: number | null;
 }
 
 export interface IThread {
@@ -37,7 +90,38 @@ export interface IThread {
 	totalMembers: number;
 	comments: { userId: string; text: string }[];
 }
+export interface IVoteOption {
+	id: string;
+	label: string;
+}
 
-// Add other types as needed:
-// export interface IThread { ... }
-// export interface IUser { ... }
+export interface IUseVotingOptions {
+	thread_id: string;
+	options?: IVoteOption[];
+	anonymous?: boolean;
+	weighted?: boolean;
+}
+
+export interface IVote {
+	id?: string;
+	thread_id: string;
+	user_id: string | null;
+	vote: string | string[];
+	weight: number;
+	created_at?: string;
+	updated_at?: string;
+}
+
+export interface IVoteWithCounts {
+	votes: IVote[];
+	voteCounts: Record<string, number>;
+}
+
+export interface IConsensus {
+	agreement: number;
+	engagement: number;
+	reached: boolean;
+	yesVotes: number;
+	noVotes: number;
+	totalVotes: number;
+}

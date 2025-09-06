@@ -26,7 +26,7 @@ export default function GroupCard({ group }: GroupCardProps) {
 			}}
 			className="bg-background border border-primary/30 rounded-xl shadow-lg px-4 py-5 flex flex-col gap-6 justify-between items-center w-full  h-full ">
 			{/* Main card content */}
-			<div className="flex flex-col p-0 gap-2 w-full">
+			<div className="flex md:flex-col sm:flex-row sm:flex-wrap md:flex-nowrap justify-between p-0 gap-2 w-full">
 				<div className="flex items-center gap-3">
 					<UserGroupIcon className="h-7 w-7 text-primary" />
 					<h3 className="font-semibold text-lg text-nowrap truncate">{group.name}</h3>

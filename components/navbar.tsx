@@ -1,3 +1,4 @@
+"use client";
 import {
 	Navbar as HeroUINavbar,
 	NavbarContent,
@@ -14,6 +15,7 @@ import { Input } from "@heroui/input";
 import { link as linkStyles } from "@heroui/theme";
 import NextLink from "next/link";
 import clsx from "clsx";
+import { Avatar, Tab, Tabs } from "@heroui/react";
 
 import { siteConfig } from "@/config/site";
 import { ThemeSwitch } from "@/components/theme-switch";
@@ -25,6 +27,8 @@ import {
 	SearchIcon,
 	Logo,
 } from "@/components/icons";
+import { UserButton } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 // Custom nav items for PulseCampus
 const navItems = [
@@ -36,6 +40,7 @@ const navItems = [
 ];
 
 export const Navbar = () => {
+	const router = useRouter();
 	const searchInput = (
 		<Input
 			aria-label="Search"
@@ -84,13 +89,13 @@ export const Navbar = () => {
 			<NavbarContent className="hidden sm:flex basis-1/5 sm:basis-full" justify="end">
 				<NavbarItem className="hidden sm:flex gap-2">
 					<Link isExternal aria-label="Twitter" href={siteConfig.links.twitter}>
-						<TwitterIcon className="text-background hover:text-secondary" />
+						<TwitterIcon className="text-foreground hover:text-secondary" />
 					</Link>
 					<Link isExternal aria-label="Discord" href={siteConfig.links.discord}>
-						<DiscordIcon className="text-background hover:text-secondary" />
+						<DiscordIcon className="text-foreground hover:text-secondary" />
 					</Link>
 					<Link isExternal aria-label="Github" href={siteConfig.links.github}>
-						<GithubIcon className="text-background hover:text-secondary" />
+						<GithubIcon className="text-foreground hover:text-secondary" />
 					</Link>
 					<ThemeSwitch />
 				</NavbarItem>
@@ -98,7 +103,7 @@ export const Navbar = () => {
 				<NavbarItem className="hidden md:flex">
 					<Button
 						as={Link}
-						className="text-sm font-normal text-primary bg-background"
+						className="text-sm font-normal text-primary bg-background hover:border"
 						href="/signup"
 						startContent={<HeartFilledIcon className="text-primary" />}
 						variant="flat">
@@ -109,30 +114,20 @@ export const Navbar = () => {
 
 			<NavbarContent className="sm:hidden basis-1 pl-4" justify="end">
 				<Link isExternal aria-label="Github" href={siteConfig.links.github}>
-					<GithubIcon className="text-background" />
+					<GithubIcon className="text-foreground" />
 				</Link>
 				<ThemeSwitch />
-				<NavbarMenuToggle className="text-background" />
+				<UserButton
+					fallback={
+						<Avatar
+							size="sm"
+							onClick={() => {
+								router.push("/auth/sign-in");
+							}}
+						/>
+					}
+				/>
 			</NavbarContent>
-
-			<NavbarMenu>
-				{searchInput}
-				<div className="mx-4 mt-2 flex flex-col gap-2">
-					{navItems.map((item, index) => (
-						<NavbarMenuItem key={`${item.label}-${index}`}>
-							<Link
-								color={index === navItems.length - 1 ? "primary" : "foreground"}
-								href={item.href}
-								size="lg"
-								className={
-									index === navItems.length - 1 ? "text-primary font-bold" : ""
-								}>
-								{item.label}
-							</Link>
-						</NavbarMenuItem>
-					))}
-				</div>
-			</NavbarMenu>
 		</HeroUINavbar>
 	);
 };
