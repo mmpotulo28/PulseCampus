@@ -30,7 +30,7 @@ export interface IThread {
 	totalMembers?: number;
 	comments?: { userId: string; text: string }[];
 	voteOptions?: IVoteOption[]; // MCQ support
-	voteType?: "yesno" | "mcq";
+	vote_type?: "yesno" | "mcq";
 }
 export interface IVoteOption {
 	id: string;

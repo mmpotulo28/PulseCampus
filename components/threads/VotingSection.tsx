@@ -1,7 +1,8 @@
 import { Card, Divider, Progress, Button } from "@heroui/react";
 import { ChartBarIcon } from "@heroicons/react/24/solid";
 import type { IThread, IVoteWithCounts } from "@/types";
-import VoteCard from "@/components/VoteCard";
+import VoteCard from "@/components/threads/VoteCard";
+import MultipleVoteCard from "@/components/threads/MultipleVoteCard";
 
 interface VotingSectionProps {
 	thread: IThread;
@@ -10,6 +11,10 @@ interface VotingSectionProps {
 
 export default function VotingSection({ thread, votes }: VotingSectionProps) {
 	const totalVotes = Object.values(votes.voteCounts).reduce((a, b) => a + b, 0);
+	const isMCQ = thread.vote_type === "mcq";
+
+	console.log("VotingSection votes:", isMCQ);
+
 	return (
 		<Card className="p-6 rounded-2xl shadow-lg bg-background flex flex-col gap-6 border border-secondary/20 mt-6">
 			<h2 className="text-lg font-bold mb-2 flex items-center gap-2">
@@ -17,14 +22,14 @@ export default function VotingSection({ thread, votes }: VotingSectionProps) {
 				Vote on this Proposal
 			</h2>
 			<div className="flex gap-4 mt-2">
-				<VoteCard thread={thread} />
+				{isMCQ ? <MultipleVoteCard thread={thread} /> : <VoteCard thread={thread} />}
 			</div>
 			<div className="mt-4 flex items-center gap-2 text-xs text-default-500">
 				<span className="rounded-full w-2 h-2 bg-success inline-block" />
 				<span>Real-time results</span>
 			</div>
 			<div className="mt-2 text-xs text-default-600">
-				{thread.voteOptions
+				{isMCQ && thread.voteOptions
 					? thread.voteOptions.map((opt) => (
 							<span key={opt.id} className="mr-2">
 								{opt.label}: {votes.voteCounts[opt.id] || 0}
@@ -33,20 +38,26 @@ export default function VotingSection({ thread, votes }: VotingSectionProps) {
 					: `Yes: ${votes.voteCounts["yes"] || 0} | No: ${votes.voteCounts["no"] || 0}`}
 			</div>
 			<Divider className="my-2" />
-			<div>
-				<Progress
-					value={totalVotes ? Math.round((votes.voteCounts.yes / totalVotes) * 100) : 0}
-					label="Yes votes"
-					className="mb-2"
-					color="primary"
-				/>
-				<Progress
-					value={totalVotes ? Math.round((votes.voteCounts.no / totalVotes) * 100) : 0}
-					label="No votes"
-					className="mb-2"
-					color="secondary"
-				/>
-			</div>
+			{!isMCQ && (
+				<div>
+					<Progress
+						value={
+							totalVotes ? Math.round((votes.voteCounts.yes / totalVotes) * 100) : 0
+						}
+						label="Yes votes"
+						className="mb-2"
+						color="primary"
+					/>
+					<Progress
+						value={
+							totalVotes ? Math.round((votes.voteCounts.no / totalVotes) * 100) : 0
+						}
+						label="No votes"
+						className="mb-2"
+						color="secondary"
+					/>
+				</div>
+			)}
 		</Card>
 	);
 }

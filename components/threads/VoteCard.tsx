@@ -1,8 +1,8 @@
-import { Button, Card, Input, Checkbox } from "@heroui/react";
+import { Button, Card } from "@heroui/react";
 import { motion, useAnimation } from "framer-motion";
 import { useState } from "react";
 import { useVoting } from "@/hooks/useVoting";
-import type { IThread, IVoteOption } from "@/types";
+import type { IThread } from "@/types";
 
 export interface VoteCardProps {
 	thread: IThread;
@@ -24,20 +24,15 @@ export default function VoteCard({ thread, disabled = false }: VoteCardProps) {
 		votingCreateLoading,
 		votingCreateMessage,
 		votingCreateError,
-		voteOptions,
-		setVoteOptions,
 	} = useVoting({
 		thread_id: thread.id || "",
-		options: thread.voteOptions || [
+		options: [
 			{ id: "yes", label: "Yes" },
 			{ id: "no", label: "No" },
 		],
 		anonymous: false,
 		weighted: true,
 	});
-
-	const [selected, setSelected] = useState<string[]>([]);
-	const [newNomination, setNewNomination] = useState("");
 
 	const handlePause = () => {
 		setPaused(true);
@@ -55,24 +50,6 @@ export default function VoteCard({ thread, disabled = false }: VoteCardProps) {
 				ease: "easeInOut",
 			},
 		});
-	};
-
-	const isMCQ = voteOptions.length > 2 || thread.voteType === "mcq";
-
-	const handleVote = () => {
-		if (isMCQ) {
-			if (selected.length === 0) return;
-			submitVote(selected);
-		} else {
-			if (selected.length !== 1) return;
-			submitVote(selected[0]);
-		}
-	};
-
-	const handleAddNomination = () => {
-		if (newNomination.trim().length < 2) return;
-		setVoteOptions([...voteOptions, { id: newNomination.trim(), label: newNomination.trim() }]);
-		setNewNomination("");
 	};
 
 	return (
@@ -93,66 +70,20 @@ export default function VoteCard({ thread, disabled = false }: VoteCardProps) {
 						</span>
 					</div>
 					<div className="font-semibold text-lg mt-2">{thread.title}</div>
-					{/* MCQ voting UI */}
-					{isMCQ ? (
-						<div className="flex flex-col gap-2 mt-4">
-							{voteOptions.map((opt) => (
-								<Checkbox
-									key={opt.id}
-									value={opt.id}
-									checked={selected.includes(opt.id)}
-									onChange={() => {
-										setSelected((prev) =>
-											prev.includes(opt.id)
-												? prev.filter((id) => id !== opt.id)
-												: [...prev, opt.id],
-										);
-									}}>
-									{opt.label}
-								</Checkbox>
-							))}
-							<div className="flex gap-2 mt-2">
-								<Button
-									isLoading={votingCreateLoading}
-									className="bg-primary text-background rounded-full font-semibold hover:bg-secondary transition"
-									onPress={handleVote}
-									disabled={selected.length === 0 || votingCreateLoading}>
-									{votingCreateLoading ? "Voting..." : "Vote"}
-								</Button>
-							</div>
-							{/* Optionally allow nominations */}
-							<Input
-								placeholder="Add nomination"
-								value={newNomination}
-								onChange={(e) => setNewNomination(e.target.value)}
-								className="mt-2"
-								maxLength={40}
-							/>
-							<Button
-								className="mt-2"
-								color="secondary"
-								radius="full"
-								variant="bordered"
-								onPress={handleAddNomination}
-								disabled={newNomination.length < 2}>
-								Add Nomination
-							</Button>
-						</div>
-					) : (
-						<div className="flex gap-2 mt-4">
-							{voteOptions.map((opt) => (
-								<Button
-									key={opt.id}
-									isLoading={votingCreateLoading && userVote === opt.id}
-									className={`bg-primary text-background rounded-full font-semibold hover:bg-secondary transition`}
-									onPress={() => submitVote(opt.id)}>
-									{votingCreateLoading && userVote === opt.id
-										? "Voting..."
-										: opt.label}
-								</Button>
-							))}
-						</div>
-					)}
+					<div className="flex gap-2 mt-4">
+						<Button
+							isLoading={votingCreateLoading}
+							className="bg-primary text-background rounded-full font-semibold hover:bg-secondary transition"
+							onPress={() => submitVote("yes")}>
+							{votingCreateLoading && userVote === "yes" ? "Voting..." : "Yes"}
+						</Button>
+						<Button
+							isLoading={votingCreateLoading}
+							className="bg-background border border-primary px-4 py-2 rounded-full font-semibold text-primary hover:bg-primary hover:text-background transition"
+							onPress={() => submitVote("no")}>
+							{votingCreateLoading && userVote === "no" ? "Voting..." : "No"}
+						</Button>
+					</div>
 					<div className="mt-4 flex items-center gap-2 text-xs text-default-500">
 						<span className="rounded-full w-2 h-2 bg-success inline-block" />
 						<span>Real-time results</span>
@@ -167,11 +98,7 @@ export default function VoteCard({ thread, disabled = false }: VoteCardProps) {
 						<div className="mt-2 text-xs text-success">{votingFetchMessage}</div>
 					)}
 					<div className="mt-2 text-xs text-default-600">
-						{voteOptions.map((opt) => (
-							<span key={opt.id} className="mr-2">
-								{opt.label}: {votes.voteCounts[opt.id] || 0}
-							</span>
-						))}
+						Yes: {votes.voteCounts["yes"] || 0} | No: {votes.voteCounts["no"] || 0}
 					</div>
 					{votingCreateError && (
 						<div className="mt-2 text-xs text-danger">{votingCreateError}</div>
