@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, use } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createClient, REALTIME_LISTEN_TYPES } from "@supabase/supabase-js";
-import type { IConsensus, IUseVotingOptions, IVote, IVoteWithCounts } from "@/types";
+import type { IConsensus, IUseVotingOptions, IVote, IVoteWithCounts, IVoteOption } from "@/types";
 import { useUser } from "@clerk/nextjs";
 import supabase from "@/lib/db";
 
@@ -14,21 +14,17 @@ export function useVoting({
 	weighted = false,
 }: IUseVotingOptions) {
 	const { user } = useUser();
+	const [voteOptions, setVoteOptions] = useState<IVoteOption[]>(options);
 	const [votes, setVotes] = useState<IVoteWithCounts>({
 		votes: [],
-		voteCounts: {
-			yes: 0,
-			no: 0,
-		},
+		voteCounts: {},
 	});
 	const [userVote, setUserVote] = useState<string | string[] | null>(null);
 
-	// Fetch votes states
 	const [votingFetchLoading, setVotingFetchLoading] = useState(false);
 	const [votingFetchMessage, setVotingFetchMessage] = useState<string | null>(null);
 	const [votingFetchError, setVotingFetchError] = useState<string | null>(null);
 
-	// Create vote states
 	const [votingCreateLoading, setVotingCreateLoading] = useState(false);
 	const [votingCreateMessage, setVotingCreateMessage] = useState<string | null>(null);
 	const [votingCreateError, setVotingCreateError] = useState<string | null>(null);
@@ -74,7 +70,6 @@ export function useVoting({
 				.eq("thread_id", thread_id)) as { data: IVote[] | null; error: any };
 
 			if (error) {
-				console.error("Supabase fetch error:", error); // Added for debugging
 				setVotingFetchError(error.message || "errored");
 				setVotingFetchLoading(false);
 				return;
@@ -98,7 +93,6 @@ export function useVoting({
 				// setVotingFetchMessage("Votes fetched successfully.");
 			}
 		} catch (err: any) {
-			console.error("FetchVotes exception:", err); // Added for debugging
 			setVotingFetchError(err.message || "errored");
 		}
 		setVotingFetchLoading(false);
@@ -132,25 +126,18 @@ export function useVoting({
 						schema: "public",
 						table: "votes",
 					},
-					(payload) => {
-						console.log(
-							"Votes changed, refetching...",
-							JSON.stringify(payload, null, 2),
-						);
+					() => {
 						fetchVotes();
 					},
 				)
 				.subscribe();
-
-			console.log("Subscribed to votes channel:", channel);
 		} catch (error) {
-			console.error("Error subscribing to votes channel:", error);
+			// ignore
 		}
 
 		return () => {
 			if (channel) {
 				channel.unsubscribe();
-				console.log("Unsubscribed from votes channel");
 			}
 		};
 	}, []);
@@ -172,20 +159,15 @@ export function useVoting({
 					vote,
 					weight: weighted ? getUserWeight(user) : 1,
 				};
-				console.log("Submitting vote:", payload);
 
 				const { error } = await supabase.from("votes").upsert([payload]);
 				if (error) {
-					console.error("Supabase submit error:", error); // Added for debugging
 					setVotingCreateError(error.message || "errored");
 				} else {
 					setUserVote(vote);
 					setVotingCreateMessage("Vote submitted successfully.");
 				}
-
-				// fetchVotes();
 			} catch (err: any) {
-				console.error("SubmitVote exception:", err); // Added for debugging
 				setVotingCreateError(err.message || "errored");
 			}
 			setVotingCreateLoading(false);
@@ -193,29 +175,28 @@ export function useVoting({
 		[thread_id, user, anonymous, weighted],
 	);
 
-	// Consensus detection
+	// Consensus detection for MCQ: agreement = max option %; engagement = total votes / options
 	useEffect(() => {
 		const totalVotes = Object.values(votes?.voteCounts || {}).reduce((a, b) => a + b, 0);
-		const yesVotes = (votes?.voteCounts && votes?.voteCounts["yes"]) || 0;
-		const noVotes = (votes?.voteCounts && votes?.voteCounts["no"]) || 0;
-		const agreement = totalVotes ? (yesVotes / totalVotes) * 100 : 0;
-		const engagement = thread_id
-			? (totalVotes / (options.length > 2 ? options.length : 2)) * 100
-			: 0;
+		const yesVotes = votes?.voteCounts["yes"] || 0;
+		const noVotes = votes?.voteCounts["no"] || 0;
+		const maxVotes = Math.max(...Object.values(votes?.voteCounts || {}), 0);
+		const agreement = totalVotes ? (maxVotes / totalVotes) * 100 : 0;
+		const engagement = thread_id ? (totalVotes / (voteOptions.length || 1)) * 100 : 0;
 		const reached = agreement >= 70 && engagement >= 50;
 		setConsensus({ agreement, engagement, reached, yesVotes, noVotes, totalVotes });
-	}, [votes?.voteCounts, thread_id, votes.votes]);
+	}, [votes?.voteCounts, thread_id, votes.votes, voteOptions.length]);
 
 	return {
 		votes,
 		userVote,
 		submitVote,
 		consensus,
-		// Fetch votes states
+		voteOptions,
+		setVoteOptions,
 		votingFetchLoading,
 		votingFetchMessage,
 		votingFetchError,
-		// Create vote states
 		votingCreateLoading,
 		votingCreateMessage,
 		votingCreateError,
@@ -224,7 +205,7 @@ export function useVoting({
 
 // Example weighted voting logic (role-based)
 function getUserWeight(user: any): number {
-	switch (user.publicMetadata?.role) {
+	switch (user?.publicMetadata?.role) {
 		case "President":
 		case "Chair":
 			return 2;

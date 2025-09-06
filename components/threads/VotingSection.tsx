@@ -9,7 +9,7 @@ interface VotingSectionProps {
 }
 
 export default function VotingSection({ thread, votes }: VotingSectionProps) {
-	const totalVotes = votes.voteCounts.yes + votes.voteCounts.no;
+	const totalVotes = Object.values(votes.voteCounts).reduce((a, b) => a + b, 0);
 	return (
 		<Card className="p-6 rounded-2xl shadow-lg bg-background flex flex-col gap-6 border border-secondary/20 mt-6">
 			<h2 className="text-lg font-bold mb-2 flex items-center gap-2">
@@ -24,7 +24,13 @@ export default function VotingSection({ thread, votes }: VotingSectionProps) {
 				<span>Real-time results</span>
 			</div>
 			<div className="mt-2 text-xs text-default-600">
-				Yes: {votes.voteCounts["yes"] || 0} | No: {votes.voteCounts["no"] || 0}
+				{thread.voteOptions
+					? thread.voteOptions.map((opt) => (
+							<span key={opt.id} className="mr-2">
+								{opt.label}: {votes.voteCounts[opt.id] || 0}
+							</span>
+						))
+					: `Yes: ${votes.voteCounts["yes"] || 0} | No: ${votes.voteCounts["no"] || 0}`}
 			</div>
 			<Divider className="my-2" />
 			<div>

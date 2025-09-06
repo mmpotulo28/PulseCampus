@@ -29,6 +29,8 @@ export interface IThread {
 	votes?: Record<string, number>;
 	totalMembers?: number;
 	comments?: { userId: string; text: string }[];
+	voteOptions?: IVoteOption[]; // MCQ support
+	voteType?: "yesno" | "mcq";
 }
 export interface IVoteOption {
 	id: string;
@@ -44,9 +46,9 @@ export interface IUseVotingOptions {
 
 export interface IVote {
 	id?: string;
-	thread_id: string; // Thread ID
+	thread_id: string;
 	user_id: string | null;
-	vote: string | string[];
+	vote: string | string[]; // MCQ support
 	weight: number;
 	created_at?: string;
 	updated_at?: string;
@@ -72,5 +74,16 @@ export interface IComment {
 	user_id: string;
 	name: string;
 	text: string;
+	created_at?: string;
+}
+
+export interface INomination {
+	id: string;
+	thread_id: string;
+	name: string;
+	user_id: string;
+	email: string;
+	label: string;
+	key: string;
 	created_at?: string;
 }

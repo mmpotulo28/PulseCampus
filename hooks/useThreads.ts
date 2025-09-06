@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
-import type { IThread } from "@/types";
+import type { INomination, IThread } from "@/types";
 import { useUser } from "@clerk/nextjs";
 import { usePermissions } from "./usePermissions";
+import { useNominations } from "@/hooks/useNominations";
 
 const supabase = createClient(
 	process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,6 +26,8 @@ export function useThreads(groupId?: string) {
 	const [createLoading, setCreateLoading] = useState(false);
 	const [createError, setCreateError] = useState<string | null>(null);
 	const [createSuccess, setCreateSuccess] = useState<string | null>(null);
+
+	const { addNomination } = useNominations(""); // Use directly for insertion
 
 	const fetchThreads = useCallback(async () => {
 		setThreadsLoading(true);
@@ -72,7 +75,13 @@ export function useThreads(groupId?: string) {
 		[supabase],
 	);
 
-	const createThread = async (title: string, description: string) => {
+	const createThread = async (
+		title: string,
+		description: string,
+		voteType: "yesno" | "mcq" = "yesno",
+		deadline?: string,
+		nominations?: INomination[], // For MCQ, pass array of nomination labels
+	) => {
 		setCreateLoading(true);
 		setCreateError(null);
 		setCreateSuccess(null);
@@ -102,18 +111,41 @@ export function useThreads(groupId?: string) {
 			setCreateLoading(false);
 			return;
 		}
+		if (!deadline) {
+			setCreateError("Deadline is required.");
+			setCreateLoading(false);
+			return;
+		}
+
+		let createdThreadId: string | null = null;
+		console.log("Creating thread with nominations:", nominations);
+
 		try {
-			const { error } = await supabase.from("threads").insert([
-				{
-					group_id: groupId,
-					creator_id: user?.id,
-					title,
-					description,
-					status: "Open",
-					total_members: 1,
-				},
-			]);
+			const { data, error } = await supabase
+				.from("threads")
+				.insert([
+					{
+						group_id: groupId,
+						creator_id: user?.id,
+						title,
+						description,
+						status: "Open",
+						total_members: 1,
+						vote_type: voteType,
+						deadline,
+					},
+				])
+				.select("id");
 			if (error) throw error;
+			createdThreadId = data?.[0]?.id;
+
+			if (voteType === "mcq" && nominations && createdThreadId) {
+				for (const nomination of nominations) {
+					await addNomination({ nomination, threadId: createdThreadId });
+				}
+			} else {
+				console.log("No nominations to add or thread creation failed.");
+			}
 			setCreateSuccess("Thread created successfully.");
 			await fetchThreads();
 		} catch (err: any) {
