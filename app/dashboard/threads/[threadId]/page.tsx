@@ -8,10 +8,10 @@ import { useComments } from "@/hooks/useComments";
 import { useVoting } from "@/hooks/useVoting";
 import { useUser } from "@clerk/nextjs";
 import { useEffect } from "react";
-import ThreadHeader from "./ThreadHeader";
-import VotingSection from "./VotingSection";
-import CommentsSection from "./CommentsSection";
-import InsightsPanel from "./InsightsPanel";
+import ThreadHeader from "@/components/threads/ThreadHeader";
+import VotingSection from "@/components/threads/VotingSection";
+import CommentsSection from "@/components/threads/CommentsSection";
+import InsightsPanel from "@/components/threads/InsightsPanel";
 
 export default function ThreadDetailsPage() {
 	const { threadId } = useParams();
@@ -64,13 +64,14 @@ export default function ThreadDetailsPage() {
 	return (
 		<div className="py-8 px-4 max-w-7xl mx-auto">
 			<div className="flex flex-col md:flex-row gap-8">
-				<div className="flex-2 flex flex-col gap-6">
+				<div className="flex-2 flex flex-col gap-2">
 					<ThreadHeader thread={thread} />
 					<VotingSection thread={thread} votes={votes} />
 					<CommentsSection
 						comments={comments}
 						commentsLoading={commentsLoading}
 						commentsError={commentsError}
+						threadId={thread.id || ""}
 					/>
 					<div className="mt-6 flex justify-end gap-2">
 						<Button

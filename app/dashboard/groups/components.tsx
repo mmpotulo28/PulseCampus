@@ -19,7 +19,7 @@ import {
 	SparklesIcon,
 } from "@heroicons/react/24/solid";
 import { useGroup } from "@/hooks/useGroup";
-import { useOrganization } from "@clerk/nextjs";
+import { OrganizationSwitcher, useOrganization } from "@clerk/nextjs";
 import { use, useEffect, useState } from "react";
 import { button as buttonStyles } from "@heroui/theme";
 import { OrganizationMembershipResource } from "@clerk/types";
@@ -220,11 +220,14 @@ export function OrganizationSidePanel({ isAdmin, groups }: { isAdmin: boolean; g
 							Invite members and customize your group after creation!
 						</span>
 					</div>
+					<Divider className="mt-2" />
+					<OrganizationSwitcher />
 				</>
 			) : (
-				<div className="text-sm text-danger flex items-center gap-2">
-					<BuildingLibraryIcon className="h-5 w-5 text-danger" />
-					No organization selected. Please select your university above.
+				<div className="text-sm text-danger flex flex-col items-center gap-2">
+					No organization selected. Please select your university below.
+					<Divider className="mt-2" />
+					<OrganizationSwitcher />
 				</div>
 			)}
 		</Card>

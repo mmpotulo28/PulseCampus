@@ -1,20 +1,27 @@
-import { Card, Tooltip, Chip } from "@heroui/react";
+import { Card, Tooltip, Chip, Button } from "@heroui/react";
 import {
 	ChartBarIcon,
 	UserGroupIcon,
 	ClockIcon,
 	CheckCircleIcon,
 	XCircleIcon,
+	PencilSquareIcon,
+	TrashIcon,
 } from "@heroicons/react/24/solid";
 import type { IThread } from "@/types";
+import Link from "next/link";
+import { button as buttonStyles } from "@heroui/theme";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface ThreadHeaderProps {
 	thread: IThread;
 }
 
 export default function ThreadHeader({ thread }: ThreadHeaderProps) {
+	const { isAdmin, isExco } = usePermissions();
+
 	return (
-		<Card className="p-6 rounded-2xl shadow-lg bg-white dark:bg-zinc-900 flex flex-col gap-4 border border-primary/20">
+		<Card className="p-6 bg-default-50 rounded-2xl shadow-lg flex flex-col gap-4 border border-primary/20">
 			<div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
 				<div>
 					<h1 className="text-2xl font-bold mb-1 flex items-center gap-2">
@@ -65,6 +72,33 @@ export default function ThreadHeader({ thread }: ThreadHeaderProps) {
 						)}
 						%
 					</span>
+					{/* Edit/Delete buttons for admin/exco */}
+					{(isAdmin || isExco) && (
+						<div className="flex gap-2 mt-2">
+							<Link
+								href={`/dashboard/threads/${thread.id}/edit`}
+								className={buttonStyles({
+									color: "secondary",
+									radius: "full",
+									variant: "bordered",
+									size: "sm",
+								})}>
+								<PencilSquareIcon className="h-4 w-4 mr-1 inline" />
+								Edit
+							</Link>
+							<Link
+								href={`/dashboard/threads/${thread.id}/delete`}
+								className={buttonStyles({
+									color: "danger",
+									radius: "full",
+									variant: "bordered",
+									size: "sm",
+								})}>
+								<TrashIcon className="h-4 w-4 mr-1 inline" />
+								Delete
+							</Link>
+						</div>
+					)}
 				</div>
 			</div>
 		</Card>

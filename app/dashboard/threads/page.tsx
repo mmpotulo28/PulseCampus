@@ -5,7 +5,7 @@ import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/solid";
 import { useThreads } from "@/hooks/useThreads";
 
 export default function ThreadsPage() {
-	const { threads, threadsLoading, threadsError } = useThreads();
+	const { threads, threadsLoading, threadsError, isAdmin } = useThreads();
 
 	return (
 		<div className="py-8 px-4 max-w-3xl mx-auto">
@@ -21,12 +21,38 @@ export default function ThreadsPage() {
 					<li
 						key={t.id}
 						className="flex items-center justify-between p-4 rounded-lg bg-white dark:bg-zinc-900 mb-2 shadow">
-						<Link
-							href={`/dashboard/threads/${t.id}`}
-							className="font-semibold text-secondary hover:underline">
-							{t.title}
-						</Link>
-						<span className="text-xs text-zinc-500">{t.status}</span>
+						<div className="flex items-center gap-2">
+							<Link
+								href={`/dashboard/threads/${t.id}`}
+								className="font-semibold text-secondary hover:underline">
+								{t.title}
+							</Link>
+							<span className="text-xs text-zinc-500">{t.status}</span>
+						</div>
+						{isAdmin && (
+							<div className="flex gap-2">
+								<Link
+									href={`/dashboard/threads/${t.id}/edit`}
+									className={buttonStyles({
+										color: "secondary",
+										radius: "full",
+										variant: "bordered",
+										size: "sm",
+									})}>
+									Edit
+								</Link>
+								<Link
+									href={`/dashboard/threads/${t.id}/delete`}
+									className={buttonStyles({
+										color: "danger",
+										radius: "full",
+										variant: "bordered",
+										size: "sm",
+									})}>
+									Delete
+								</Link>
+							</div>
+						)}
 					</li>
 				))}
 			</ul>

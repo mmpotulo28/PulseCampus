@@ -70,6 +70,7 @@ export interface IComment {
 	id: string;
 	thread_id: string;
 	user_id: string;
+	name: string;
 	text: string;
 	created_at?: string;
 }

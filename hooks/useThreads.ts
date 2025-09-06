@@ -123,6 +123,36 @@ export function useThreads(groupId?: string) {
 		}
 	};
 
+	const updateThread = useCallback(
+		async (
+			threadId: string,
+			updates: { title?: string; description?: string; status?: string },
+		) => {
+			try {
+				const { error } = await supabase.from("threads").update(updates).eq("id", threadId);
+				if (error) throw error;
+				await fetchThreads();
+				await getThread(threadId);
+			} catch (err: any) {
+				console.error("Error updating thread:", err);
+			}
+		},
+		[fetchThreads, getThread],
+	);
+
+	const deleteThread = useCallback(
+		async (threadId: string) => {
+			try {
+				const { error } = await supabase.from("threads").delete().eq("id", threadId);
+				if (error) throw error;
+				await fetchThreads();
+			} catch (err: any) {
+				console.error("Error deleting thread:", err);
+			}
+		},
+		[fetchThreads],
+	);
+
 	return {
 		threads,
 		threadsLoading,
@@ -136,5 +166,7 @@ export function useThreads(groupId?: string) {
 		createError,
 		createSuccess,
 		isAdmin,
+		updateThread,
+		deleteThread,
 	};
 }

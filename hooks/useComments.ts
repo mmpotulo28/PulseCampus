@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, REALTIME_LISTEN_TYPES } from "@supabase/supabase-js";
 import type { IComment } from "@/types";
-import { error } from "console";
+import { useUser } from "@clerk/nextjs";
 
 const supabase = createClient(
 	process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,15 +13,15 @@ export function useComments(threadId: string) {
 	const [commentsLoading, setCommentsLoading] = useState(false);
 	const [commentsError, setCommentsError] = useState<string | null>(null);
 
-	// create comment states
-	const [addCommentsLoading, setAddCommentsLoading] = useState(false);
-	const [addCommentsError, setAddCommentsError] = useState<string | null>(null);
+	const [addCommentLoading, setAddCommentLoading] = useState(false);
+	const [addCommentError, setAddCommentError] = useState<string | null>(null);
+	const [addCommentSuccess, setAddCommentSuccess] = useState<string | null>(null);
+
+	const { user } = useUser();
 
 	const fetchComments = useCallback(async () => {
 		setCommentsLoading(true);
 		setCommentsError(null);
-
-		console.log("fetchComments called with threadId:", threadId); // Debug log
 
 		if (!threadId) {
 			setComments([]);
@@ -34,7 +34,10 @@ export function useComments(threadId: string) {
 			.from("comments")
 			.select("*")
 			.eq("thread_id", threadId)
-			.order("created_at", { ascending: true });
+			.order("created_at", { ascending: false });
+
+		console.log("Fetched comments:", data, error); // Debug log
+
 		if (error) setCommentsError(error.message);
 		setComments(data || []);
 		setCommentsLoading(false);
@@ -44,20 +47,76 @@ export function useComments(threadId: string) {
 		if (threadId) fetchComments();
 	}, [threadId, fetchComments]);
 
+	// Subscribe to realtime changes on comments table for this thread
+	useEffect(() => {
+		if (!threadId) return;
+		const channel = supabase
+			.channel("public:comments", {
+				config: {
+					presence: { enabled: false },
+				},
+			})
+			.on(
+				REALTIME_LISTEN_TYPES.POSTGRES_CHANGES,
+				{
+					event: "*",
+					schema: "public",
+					table: "comments",
+				},
+				(payload) => {
+					// On any change, refetch comments
+					fetchComments();
+				},
+			)
+			.subscribe();
+
+		return () => {
+			channel.unsubscribe();
+		};
+	}, [threadId, fetchComments]);
+
 	const addComment = useCallback(
-		async (userId: string, text: string) => {
-			setAddCommentsLoading(true);
-			setAddCommentsError(null);
+		async (text: string) => {
+			setAddCommentLoading(true);
+			setAddCommentError(null);
+			setAddCommentSuccess(null);
 
-			const { error } = await supabase
+			if (!user?.id) {
+				setAddCommentError("You must be signed in to comment.");
+				setAddCommentLoading(false);
+				return;
+			}
+			if (!threadId) {
+				setAddCommentError("No thread selected.");
+				setAddCommentLoading(false);
+				return;
+			}
+			if (!text || text.length < 2) {
+				setAddCommentError("Comment is too short.");
+				setAddCommentLoading(false);
+				return;
+			}
+
+			const { error, data } = await supabase
 				.from("comments")
-				.insert([{ thread_id: threadId, user_id: userId, text }]);
-			if (error) setAddCommentsError(error.message);
-
-			await fetchComments();
-			setAddCommentsLoading(false);
+				.insert([
+					{
+						thread_id: threadId,
+						user_id: user.id,
+						text,
+						name: user.fullName || "Anonymous",
+					},
+				])
+				.select();
+			if (error) {
+				setAddCommentError(error.message);
+			} else {
+				setAddCommentSuccess("Comment added!");
+				setComments((prev) => [...prev, ...data] as IComment[]); // Optimistic update
+			}
+			setAddCommentLoading(false);
 		},
-		[threadId, fetchComments],
+		[user, threadId],
 	);
 
 	return {
@@ -65,9 +124,9 @@ export function useComments(threadId: string) {
 		commentsLoading,
 		commentsError,
 		fetchComments,
-
-		addCommentsLoading,
-		addCommentsError,
 		addComment,
+		addCommentLoading,
+		addCommentError,
+		addCommentSuccess,
 	};
 }
