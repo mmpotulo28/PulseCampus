@@ -86,12 +86,7 @@ export function useGroup() {
 	}, []);
 
 	const createGroup = useCallback(
-		async (
-			name: string,
-			description: string,
-			isPublic: boolean = true,
-			activity: number = 0,
-		) => {
+		async (group: IGroup) => {
 			setCreateLoading(true);
 			setCreateError(null);
 			setCreateSuccess(null);
@@ -108,19 +103,19 @@ export function useGroup() {
 
 				return;
 			}
-			if (name.length < 3) {
+			if (group.name.length < 3) {
 				setCreateError("Group name must be at least 3 characters.");
 				setCreateLoading(false);
 
 				return;
 			}
-			if (description.length < 10) {
+			if (!group.description || group.description.length < 10) {
 				setCreateError("Description must be at least 10 characters.");
 				setCreateLoading(false);
 
 				return;
 			}
-			if (groups.some((g) => g.name.toLowerCase() === name.toLowerCase())) {
+			if (groups.some((g) => g.name.toLowerCase() === group.name.toLowerCase())) {
 				setCreateError("Group name already exists.");
 				setCreateLoading(false);
 
@@ -130,12 +125,12 @@ export function useGroup() {
 				const { error } = await supabase.from("groups").insert([
 					{
 						org_id: organization?.id,
-						name,
-						description,
+						name: group.name,
+						description: group.description,
 						owner: user?.fullName || user?.id,
-						is_public: isPublic,
+						is_public: group.is_public,
 						members: 1,
-						activity,
+						activity: group.activity,
 						members_list: JSON.stringify([{ name: user?.fullName, role: "Admin" }]),
 					},
 				]);

@@ -19,15 +19,19 @@ export default function CreateGroupPage() {
 	const { createGroup, createLoading, createError, createSuccess, groups, group } = useGroup();
 	const { isAdmin } = usePermissions();
 
-	const orgName = organization?.name || "";
-	const orgId = organization?.id || "";
-
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (!isAdmin || !orgId) return;
+		if (!isAdmin || !organization?.id) return;
 		if (name.length < 3 || desc.length < 10) return;
 		if (groups.some((g) => g.name.toLowerCase() === name.toLowerCase())) return;
-		await createGroup(name, desc, isPublic, activity);
+		await createGroup({
+			id: "",
+			org_id: organization?.id || "",
+			name,
+			description: desc,
+			is_public: isPublic,
+			activity,
+		});
 	};
 
 	// Redirect after success and show invite UI
@@ -53,8 +57,8 @@ export default function CreateGroupPage() {
 						isAdmin={isAdmin}
 						isPublic={isPublic}
 						name={name}
-						orgId={orgId}
-						orgName={orgName}
+						orgId={organization?.id || ""}
+						orgName={organization?.name || ""}
 						setActivity={setActivity}
 						setDesc={setDesc}
 						setIsPublic={setIsPublic}

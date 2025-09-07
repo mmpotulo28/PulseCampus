@@ -7,25 +7,25 @@ export type IconSvgProps = SVGProps<SVGSVGElement> & {
 
 export interface IGroup {
 	id: string;
-	orgId: string; // Organization ID
+	org_id: string; // Organization ID
 	name: string;
 	description?: string;
 	members?: number;
-	isPublic?: boolean;
+	is_public?: boolean;
 	activity?: number;
-	createdAt?: string;
+	created_at?: string;
 	owner?: string;
 	membersList?: { name: string; role: string }[];
 }
 
 export interface IThread {
 	id: string;
-	groupId: string; // Group ID
-	creatorId?: string;
+	group_id: string; // Group ID
+	creator_id?: string;
 	title: string;
 	description?: string;
 	status?: string;
-	createdAt?: string;
+	created_at?: string;
 	deadline?: string;
 	votes?: Record<string, number>;
 	totalMembers?: number;

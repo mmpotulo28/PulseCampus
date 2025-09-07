@@ -133,15 +133,7 @@ export default defineConfig([
 
 			"react/self-closing-comp": "warn",
 
-			"react/jsx-sort-props": [
-				"warn",
-				{
-					callbacksLast: true,
-					shorthandFirst: true,
-					noSortAlphabetically: false,
-					reservedFirst: true,
-				},
-			],
+			"react/jsx-sort-props": "off",
 
 			"padding-line-between-statements": [
 				"warn",
