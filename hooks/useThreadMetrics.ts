@@ -43,6 +43,7 @@ export function useThreadMetrics(threadId: string) {
 					supabase.from("votes").select("*").eq("thread_id", threadId),
 					supabase.from("comments").select("*").eq("thread_id", threadId),
 				]);
+
 				if (cancelled) return;
 				if (threadError || votesError || commentsError) {
 					setError(
@@ -63,6 +64,7 @@ export function useThreadMetrics(threadId: string) {
 			}
 		}
 		if (threadId) fetchAll();
+
 		return () => {
 			cancelled = true;
 		};
@@ -78,12 +80,14 @@ export function useThreadMetrics(threadId: string) {
 
 	const engagementScore = useMemo(() => {
 		const members = thread?.totalMembers || 1;
+
 		return Math.round(((totalVotes + totalComments) / members) * 100);
 	}, [totalVotes, totalComments, thread]);
 
 	// MCQ support: count votes per option
 	const nomineeCounts = useMemo(() => {
 		const counts: Record<string, number> = {};
+
 		votes.forEach((v) => {
 			if (Array.isArray(v.vote)) {
 				v.vote.forEach((opt) => {
@@ -93,6 +97,7 @@ export function useThreadMetrics(threadId: string) {
 				counts[v.vote] = (counts[v.vote] || 0) + (v.weight || 1);
 			}
 		});
+
 		return counts;
 	}, [votes]);
 
@@ -106,6 +111,7 @@ export function useThreadMetrics(threadId: string) {
 	const winningNominee = useMemo(() => {
 		if (!thread || thread.status?.toLowerCase() !== "closed" || !topNominees.length)
 			return null;
+
 		return topNominees[0].option;
 	}, [thread, topNominees]);
 
@@ -117,6 +123,7 @@ export function useThreadMetrics(threadId: string) {
 			? (total / thread.voteOptions.length) * 100
 			: 0;
 		const reached = agreement >= 70 && engagement >= 50;
+
 		return {
 			agreement,
 			engagement,

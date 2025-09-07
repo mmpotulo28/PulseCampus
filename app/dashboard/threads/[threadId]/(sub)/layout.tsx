@@ -1,23 +1,14 @@
 "use client";
 
 import { OrganizationSidePanel } from "@/app/dashboard/groups/components";
-import { useGroup } from "@/hooks/useGroup";
-import { usePermissions } from "@/hooks/usePermissions";
 
-export default function ThreadLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const { groups } = useGroup();
-  const { isAdmin } = usePermissions();
-
-  return (
-    <div className="py-8 px-4 max-w-5xl mx-auto flex flex-col md:flex-row gap-10 my-10">
-      <div className="flex-2">{children}</div>
-      <div className="w-full flex-1">
-        <OrganizationSidePanel groups={groups} isAdmin={isAdmin} />
-      </div>
-    </div>
-  );
+export default function ThreadLayout({ children }: { children: React.ReactNode }) {
+	return (
+		<div className="py-8 px-4 max-w-5xl mx-auto flex flex-col md:flex-row gap-10 my-10">
+			<div className="flex-2">{children}</div>
+			<div className="w-full flex-1">
+				<OrganizationSidePanel />
+			</div>
+		</div>
+	);
 }
