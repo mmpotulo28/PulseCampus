@@ -1,8 +1,8 @@
 import { UserGroupIcon, ChatBubbleLeftRightIcon, StarIcon } from "@heroicons/react/24/outline";
 import { Card } from "@heroui/card";
-import { FaRegCommentDots } from "react-icons/fa";
 
 import { IThread } from "@/types";
+import { MessageCircleMore } from "lucide-react";
 
 export const StatsCard = ({
 	icon,
@@ -63,7 +63,7 @@ export function StatCards({
 
 			<StatsCard
 				color="warning"
-				icon={<FaRegCommentDots className="h-8 w-8 text-warning" />}
+				icon={<MessageCircleMore size={30} className="text-warning" />}
 				label="Total Comments"
 				value={totalComments}
 			/>

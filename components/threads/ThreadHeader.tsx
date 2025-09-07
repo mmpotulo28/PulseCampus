@@ -1,6 +1,6 @@
 import type { IThread } from "@/types";
 
-import { Card, Tooltip } from "@heroui/react";
+import { Button, Card, Tooltip } from "@heroui/react";
 import {
 	ChartBarIcon,
 	UserGroupIcon,
@@ -11,9 +11,9 @@ import {
 	TrashIcon,
 } from "@heroicons/react/24/solid";
 import Link from "next/link";
-import { button as buttonStyles } from "@heroui/theme";
 
 import { usePermissions } from "@/hooks/usePermissions";
+import { ExternalLink } from "lucide-react";
 
 interface ThreadHeaderProps {
 	thread: IThread;
@@ -76,28 +76,33 @@ export default function ThreadHeader({ thread }: ThreadHeaderProps) {
 				{/* Edit/Delete buttons for admin/exco */}
 				{(isAdmin || isExco) && (
 					<div className="flex gap-2 mt-2">
-						<Link
-							className={buttonStyles({
-								color: "secondary",
-								radius: "full",
-								variant: "bordered",
-								size: "sm",
-							})}
+						<Button
+							variant="bordered"
+							color="warning"
+							size="sm"
+							as={Link}
+							href={`/dashboard/threads/${thread.id}/metrics`}>
+							<ExternalLink className="h-4 w-4 " />
+							View Metrics
+						</Button>
+						<Button
+							isIconOnly
+							variant="bordered"
+							color="primary"
+							size="sm"
+							as={Link}
 							href={`/dashboard/threads/${thread.id}/edit`}>
-							<PencilSquareIcon className="h-4 w-4 mr-1 inline" />
-							Edit
-						</Link>
-						<Link
-							className={buttonStyles({
-								color: "danger",
-								radius: "full",
-								variant: "bordered",
-								size: "sm",
-							})}
+							<PencilSquareIcon className="h-4 w-4 " />
+						</Button>
+						<Button
+							isIconOnly
+							variant="bordered"
+							color="danger"
+							size="sm"
+							as={Link}
 							href={`/dashboard/threads/${thread.id}/delete`}>
-							<TrashIcon className="h-4 w-4 mr-1 inline" />
-							Delete
-						</Link>
+							<TrashIcon className="h-4 w-4 " />
+						</Button>
 					</div>
 				)}
 			</div>

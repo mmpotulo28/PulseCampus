@@ -105,31 +105,7 @@ export default defineConfig([
 				},
 			],
 
-			"import/order": [
-				"warn",
-				{
-					groups: [
-						"type",
-						"builtin",
-						"object",
-						"external",
-						"internal",
-						"parent",
-						"sibling",
-						"index",
-					],
-
-					pathGroups: [
-						{
-							pattern: "~/**",
-							group: "external",
-							position: "after",
-						},
-					],
-
-					"newlines-between": "always",
-				},
-			],
+			"import/order": "off",
 
 			"react/self-closing-comp": "warn",
 

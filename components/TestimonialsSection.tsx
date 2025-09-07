@@ -2,9 +2,9 @@ import { Card } from "@heroui/react";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import Image from "next/image";
-import { BsQuote } from "react-icons/bs";
 
 import { title } from "./primitives";
+import { QuoteIcon } from "lucide-react";
 
 const testimonials = [
 	{
@@ -62,7 +62,7 @@ export default function TestimonialsSection() {
 							</div>
 						</motion.div>
 						<p className="italic text-zinc-700 dark:text-zinc-300">
-							<BsQuote /> {t.quote} <BsQuote />
+							<QuoteIcon /> {t.quote} <QuoteIcon />
 						</p>
 					</Card>
 				))}

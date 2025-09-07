@@ -3,11 +3,11 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
 import { Card, Input, Button, Spinner, Divider, RadioGroup, Radio, Tooltip } from "@heroui/react";
 import { PencilSquareIcon, ChatBubbleLeftRightIcon, ClockIcon } from "@heroicons/react/24/solid";
-import { FaVoteYea, FaRegCommentDots } from "react-icons/fa";
 import ReactMarkdown from "react-markdown";
 
 import { useThreads } from "@/hooks/useThreads";
 import supabase from "@/lib/db";
+import { MessageCircleMore, Vote } from "lucide-react";
 
 function ThreadStatsCard({ thread }: { thread: any }) {
 	return (
@@ -28,10 +28,11 @@ function ThreadStatsCard({ thread }: { thread: any }) {
 			</div>
 			<div className="flex gap-4 text-xs text-default-400">
 				<span className="flex items-center gap-1">
-					<FaVoteYea className="h-4 w-4" /> {thread.votes?.length || 0} votes
+					<Vote className="h-4 w-4" /> {thread.votes?.length || 0} votes
 				</span>
 				<span className="flex items-center gap-1">
-					<FaRegCommentDots className="h-4 w-4" /> {thread.comments?.length || 0} comments
+					<MessageCircleMore className="h-4 w-4" /> {thread.comments?.length || 0}{" "}
+					comments
 				</span>
 				<span className="flex items-center gap-1">
 					<ClockIcon className="h-4 w-4" /> Last updated:{" "}
@@ -48,7 +49,7 @@ function RecentCommentsPreview({ comments }: { comments: any[] }) {
 	return (
 		<Card className="mb-4 p-4 bg-gradient-to-br from-info/10 to-background/80 border-0 shadow">
 			<div className="font-semibold mb-2 flex items-center gap-2">
-				<FaRegCommentDots className="h-5 w-5 text-info" /> Recent Comments
+				<MessageCircleMore className="h-5 w-5 text-info" /> Recent Comments
 			</div>
 			<ul className="space-y-2">
 				{comments.slice(0, 3).map((c: any) => (

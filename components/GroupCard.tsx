@@ -7,9 +7,9 @@ import {
 } from "@heroicons/react/24/solid";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { MdOutlineOpenInNew } from "react-icons/md";
 
 import { IGroup } from "@/types";
+import { ExternalLink } from "lucide-react";
 
 export interface GroupCardProps {
 	group: IGroup;
@@ -58,7 +58,7 @@ export default function GroupCard({ group, href }: GroupCardProps) {
 					color="secondary"
 					size="sm"
 					as={Link}
-					endContent={<MdOutlineOpenInNew className="h-4 w-4" />}
+					endContent={<ExternalLink className="h-4 w-4" />}
 					href={href || `/dashboard/groups/${group.id}`}>
 					View Group
 				</Button>

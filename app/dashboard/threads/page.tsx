@@ -4,7 +4,6 @@ import { button as buttonStyles } from "@heroui/theme";
 import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/solid";
 import { Spinner, Card, Chip, Button } from "@heroui/react";
 import { useMemo } from "react";
-import { FaRegCommentDots, FaRegEdit, FaVoteYea } from "react-icons/fa";
 import {
 	FolderOpenIcon,
 	LockClosedIcon,
@@ -16,6 +15,7 @@ import { OrganizationSidePanel } from "../groups/components";
 
 import { usePermissions } from "@/hooks/usePermissions";
 import { useThreads } from "@/hooks/useThreads";
+import { Edit, MessageCircleMore, Vote } from "lucide-react";
 
 // Thread Stats Header
 function ThreadsStatsHeader({ threads }: { threads: any[] }) {
@@ -89,10 +89,10 @@ function ThreadListItem({ t, isAdmin }: { t: any; isAdmin: boolean }) {
 						Created: {t.created_at ? new Date(t.created_at).toLocaleDateString() : "-"}
 					</span>
 					<span className="flex items-center gap-1">
-						<FaVoteYea className="h-3 w-3" /> {t.votesCount || 0}
+						<Vote className="h-3 w-3" /> {t.votesCount || 0}
 					</span>
 					<span className="flex items-center gap-1">
-						<FaRegCommentDots className="h-3 w-3" /> {t.commentsCount || 0}
+						<MessageCircleMore className="h-3 w-3" /> {t.commentsCount || 0}
 					</span>
 				</div>
 			</div>
@@ -102,7 +102,7 @@ function ThreadListItem({ t, isAdmin }: { t: any; isAdmin: boolean }) {
 						isIconOnly
 						as={Link}
 						color="primary"
-						endContent={<FaRegEdit className="h-4 w-4" />}
+						endContent={<Edit className="h-4 w-4" />}
 						href={`/dashboard/threads/${t.id}/edit`}
 						size="sm"
 						variant="bordered"
