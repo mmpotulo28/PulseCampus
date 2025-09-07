@@ -1,6 +1,6 @@
 import type { IGroup } from "@/types";
 
-import { Card } from "@heroui/react";
+import { Button, Card } from "@heroui/react";
 import {
 	UserGroupIcon,
 	LockClosedIcon,
@@ -9,9 +9,9 @@ import {
 	TrashIcon,
 } from "@heroicons/react/24/solid";
 import Link from "next/link";
-import { button as buttonStyles } from "@heroui/theme";
 
 import { usePermissions } from "@/hooks/usePermissions";
+import { ExternalLink } from "lucide-react";
 
 export default function GroupHeader({ group }: { group: IGroup }) {
 	const { isAdmin, isExco } = usePermissions();
@@ -38,29 +38,37 @@ export default function GroupHeader({ group }: { group: IGroup }) {
 					</p>
 				</div>
 				<div className="flex gap-2 ml-auto">
-					<Link
-						className={buttonStyles({
-							color: "secondary",
-							radius: "full",
-							variant: "bordered",
-							size: "sm",
-						})}
-						href={`/dashboard/groups/${group.id}/edit`}>
-						<PencilSquareIcon className="h-5 w-5 mr-1 inline" />
-						Edit
-					</Link>
+					<Button
+						variant="bordered"
+						color="warning"
+						size="sm"
+						as={Link}
+						href={`/dashboard/metrics/${group.id}`}>
+						<ExternalLink className="h-4 w-4 " />
+						View Metrics
+					</Button>
+
 					{(isAdmin || isExco) && (
-						<Link
-							className={buttonStyles({
-								color: "danger",
-								radius: "full",
-								variant: "bordered",
-								size: "sm",
-							})}
+						<Button
+							as={Link}
+							variant="bordered"
+							color="secondary"
+							size="sm"
+							href={`/dashboard/groups/${group.id}/edit`}>
+							<PencilSquareIcon className="h-5 w-5 mr-1 inline" />
+							Edit
+						</Button>
+					)}
+					{isAdmin && (
+						<Button
+							as={Link}
+							variant="bordered"
+							color="danger"
+							size="sm"
 							href={`/dashboard/groups/${group.id}/delete`}>
 							<TrashIcon className="h-5 w-5 mr-1 inline" />
 							Delete
-						</Link>
+						</Button>
 					)}
 				</div>
 			</Card>

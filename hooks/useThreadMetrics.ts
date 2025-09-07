@@ -1,4 +1,4 @@
-import type { IThread, IVote, IComment, IConsensus } from "@/types";
+import type { IThread, IVote, IComment, IConsensus, INomination } from "@/types";
 import { useState, useEffect, useMemo } from "react";
 import supabase from "@/lib/db";
 
@@ -24,6 +24,7 @@ export function useThreadMetrics(threadId: string) {
 	const [thread, setThread] = useState<IThread | null>(null);
 	const [votes, setVotes] = useState<IVote[]>([]);
 	const [comments, setComments] = useState<IComment[]>([]);
+	const [nominations, setNominations] = useState<INomination[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
@@ -38,24 +39,28 @@ export function useThreadMetrics(threadId: string) {
 					{ data: threadData, error: threadError },
 					{ data: votesData, error: votesError },
 					{ data: commentsData, error: commentsError },
+					{ data: nominationsData, error: nominationsError },
 				] = await Promise.all([
 					supabase.from("threads").select("*").eq("id", threadId).single(),
 					supabase.from("votes").select("*").eq("thread_id", threadId),
 					supabase.from("comments").select("*").eq("thread_id", threadId),
+					supabase.from("nominations").select("*").eq("thread_id", threadId),
 				]);
 
 				if (cancelled) return;
-				if (threadError || votesError || commentsError) {
+				if (threadError || votesError || commentsError || nominationsError) {
 					setError(
 						threadError?.message ||
 							votesError?.message ||
 							commentsError?.message ||
+							nominationsError?.message ||
 							"Error loading thread metrics",
 					);
 				}
 				setThread(threadData || null);
 				setVotes(votesData || []);
 				setComments(commentsData || []);
+				setNominations(nominationsData || []);
 			} catch (err: any) {
 				console.error("Error fetching thread metrics:", err);
 				if (!cancelled) setError("Error loading thread metrics");
@@ -86,15 +91,23 @@ export function useThreadMetrics(threadId: string) {
 
 	// MCQ support: count votes per option
 	const nomineeCounts = useMemo(() => {
-		const counts: Record<string, number> = {};
+		const counts: Record<string, { name: string; count: number }> = {};
 
 		votes.forEach((v) => {
+			const nominee = nominations.find((n) => n.id === v.vote);
+
 			if (Array.isArray(v.vote)) {
 				v.vote.forEach((opt) => {
-					counts[opt] = (counts[opt] || 0) + (v.weight || 1);
+					counts[opt] = {
+						name: nominee?.name || opt,
+						count: (counts[opt]?.count || 0) + (v.weight || 1),
+					};
 				});
 			} else {
-				counts[v.vote] = (counts[v.vote] || 0) + (v.weight || 1);
+				counts[v.vote] = {
+					name: nominee?.name || v.vote,
+					count: (counts[v.vote]?.count || 0) + (v.weight || 1),
+				};
 			}
 		});
 
@@ -102,8 +115,10 @@ export function useThreadMetrics(threadId: string) {
 	}, [votes]);
 
 	const topNominees = useMemo(() => {
+		console.log("Nominee Counts:", nomineeCounts);
+
 		return Object.entries(nomineeCounts)
-			.map(([option, count]) => ({ option, count }))
+			.map(([option, { count, name }]) => ({ option, count, name }))
 			.sort((a, b) => b.count - a.count)
 			.slice(0, 3);
 	}, [nomineeCounts]);
@@ -112,12 +127,12 @@ export function useThreadMetrics(threadId: string) {
 		if (!thread || thread.status?.toLowerCase() !== "closed" || !topNominees.length)
 			return null;
 
-		return topNominees[0].option;
+		return topNominees[0].name || topNominees[0].option;
 	}, [thread, topNominees]);
 
 	const consensus = useMemo(() => {
-		const total = Object.values(nomineeCounts).reduce((a, b) => a + b, 0);
-		const maxVotes = Math.max(...Object.values(nomineeCounts), 0);
+		const total = Object.values(nomineeCounts).reduce((a, b) => a + b.count, 0);
+		const maxVotes = Math.max(...Object.values(nomineeCounts).map((c) => c.count), 0);
 		const agreement = total ? (maxVotes / total) * 100 : 0;
 		const engagement = thread?.voteOptions?.length
 			? (total / thread.voteOptions.length) * 100

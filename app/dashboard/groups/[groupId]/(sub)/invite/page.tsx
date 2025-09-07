@@ -16,7 +16,7 @@ export default function GroupInvitePage() {
 	}, [groupId]);
 
 	return (
-		<div className="py-8 px-4 max-w-4xl mx-auto flex flex-col md:flex-row gap-10 my-10">
+		<div className="py-0 max-w-4xl w-full mx-auto flex flex-col md:flex-row gap-10 my-10">
 			{group && <InviteUsersToGroup group={group} />}
 			{!group && !getGroupLoading && <div>No group found.</div>}
 			{getGroupLoading && (

@@ -168,11 +168,23 @@ export function useGroup() {
 			}));
 			const updatedList = [...currentList, ...newMembers];
 
+			// clean duplicates
+			const uniqueNames = new Set();
+			const dedupedList = updatedList.filter((member) => {
+				if (uniqueNames.has(member.name)) {
+					return false;
+				} else {
+					uniqueNames.add(member.name);
+
+					return true;
+				}
+			});
+
 			const { error: updateError } = await supabase
 				.from("groups")
 				.update({
-					members_list: updatedList,
-					members: updatedList.length,
+					members_list: dedupedList,
+					members: dedupedList.length,
 				})
 				.eq("id", groupId);
 

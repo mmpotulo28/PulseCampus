@@ -10,7 +10,7 @@ import { useGroup } from "@/hooks/useGroup";
 export default function EditGroupPage() {
 	const { groupId } = useParams();
 	const { group, getGroup, updateGroup, updateLoading, updateError, updateSuccess } = useGroup();
-	const { isAdmin } = usePermissions();
+	const { isAdmin, isExco } = usePermissions();
 	const router = useRouter();
 
 	const [name, setName] = useState("");
@@ -33,7 +33,7 @@ export default function EditGroupPage() {
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (!isAdmin || !groupId) return;
+		if (!(isAdmin || isExco) || !groupId) return;
 		await updateGroup(groupId as string, {
 			name,
 			description: desc,
@@ -71,7 +71,7 @@ export default function EditGroupPage() {
 				<Input
 					required
 					description="Choose a clear, unique name for your group."
-					disabled={!isAdmin || updateLoading}
+					disabled={(!isAdmin && !isExco) || updateLoading}
 					label="Group Name"
 					maxLength={40}
 					placeholder="e.g. Tech Society"
@@ -81,7 +81,7 @@ export default function EditGroupPage() {
 				<Input
 					required
 					description="Briefly describe your group's purpose and activities."
-					disabled={!isAdmin || updateLoading}
+					disabled={(!isAdmin && !isExco) || updateLoading}
 					label="Description"
 					maxLength={120}
 					placeholder="Describe your group..."
@@ -92,7 +92,7 @@ export default function EditGroupPage() {
 					<Switch
 						aria-label="Public group"
 						color="primary"
-						disabled={!isAdmin || updateLoading}
+						disabled={(!isAdmin && !isExco) || updateLoading}
 						isSelected={isPublic}
 						size="sm"
 						onChange={() => setIsPublic(!isPublic)}
@@ -123,7 +123,7 @@ export default function EditGroupPage() {
 				<div className="flex gap-4 mt-2">
 					<Button
 						color="primary"
-						disabled={updateLoading || !name || !desc || !isAdmin}
+						disabled={updateLoading || !name || !desc || (!isAdmin && !isExco)}
 						isLoading={updateLoading}
 						radius="full"
 						type="submit"

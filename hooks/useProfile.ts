@@ -37,7 +37,10 @@ export function useProfile(userId: string) {
 
 				const unsafeMeta = clerkUser?.unsafeMetadata || {};
 				const profileData = {
-					name: clerkUser?.fullName || clerkUser?.username || "Unknown",
+					name:
+						`${clerkUser?.firstName || ""} ${clerkUser?.lastName || ""}` ||
+						clerkUser?.username ||
+						"Unknown",
 					role: clerkUser?.publicMetadata?.role || "Member",
 					location: clerkUser?.publicMetadata?.location || "",
 					avatar: clerkUser?.imageUrl || "",

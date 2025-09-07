@@ -74,17 +74,19 @@ export default function ThreadHeader({ thread }: ThreadHeaderProps) {
 					%
 				</span>
 				{/* Edit/Delete buttons for admin/exco */}
-				{(isAdmin || isExco) && (
-					<div className="flex gap-2 mt-2">
-						<Button
-							variant="bordered"
-							color="warning"
-							size="sm"
-							as={Link}
-							href={`/dashboard/threads/${thread.id}/metrics`}>
-							<ExternalLink className="h-4 w-4 " />
-							View Metrics
-						</Button>
+
+				<div className="flex gap-2 mt-2">
+					<Button
+						variant="bordered"
+						color="warning"
+						size="sm"
+						as={Link}
+						href={`/dashboard/threads/${thread.id}/metrics`}>
+						<ExternalLink className="h-4 w-4 " />
+						View Metrics
+					</Button>
+
+					{(isAdmin || isExco) && (
 						<Button
 							isIconOnly
 							variant="bordered"
@@ -94,6 +96,8 @@ export default function ThreadHeader({ thread }: ThreadHeaderProps) {
 							href={`/dashboard/threads/${thread.id}/edit`}>
 							<PencilSquareIcon className="h-4 w-4 " />
 						</Button>
+					)}
+					{isAdmin && (
 						<Button
 							isIconOnly
 							variant="bordered"
@@ -103,8 +107,8 @@ export default function ThreadHeader({ thread }: ThreadHeaderProps) {
 							href={`/dashboard/threads/${thread.id}/delete`}>
 							<TrashIcon className="h-4 w-4 " />
 						</Button>
-					</div>
-				)}
+					)}
+				</div>
 			</div>
 		</Card>
 	);

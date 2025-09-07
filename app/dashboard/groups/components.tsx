@@ -9,6 +9,8 @@ import {
 	Input,
 	cn,
 	Chip,
+	CheckboxGroup,
+	Button,
 } from "@heroui/react";
 import {
 	BuildingLibraryIcon,
@@ -19,7 +21,6 @@ import {
 } from "@heroicons/react/24/solid";
 import { OrganizationSwitcher, useOrganization } from "@clerk/nextjs";
 import React, { useEffect, useState } from "react";
-import { button as buttonStyles } from "@heroui/theme";
 import { OrganizationMembershipResource } from "@clerk/types";
 import { ClipboardIcon } from "@heroicons/react/24/solid";
 
@@ -146,7 +147,7 @@ export const CreateGroupForm: React.FC<CreateGroupFormProps> = ({
 export function OrganizationSidePanel() {
 	const { organization } = useOrganization();
 	const { groups } = useGroup();
-	const { isAdmin } = usePermissions();
+	const { isAdmin, isExco } = usePermissions();
 
 	return (
 		<Card className="p-6 rounded-2xl shadow-lg bg-gradient-to-br from-primary/10 via-background to-secondary/10 dark:bg-zinc-800 flex flex-col gap-4 border-2 border-primary/20">
@@ -180,7 +181,9 @@ export function OrganizationSidePanel() {
 							<UserGroupIcon className="h-4 w-4 text-primary" />
 							<span className="font-semibold">Your Role:</span>
 							<span className={isAdmin ? "text-success" : "text-secondary"}>
-								{isAdmin ? "Admin" : "Member"}
+								{isAdmin && "Admin"}
+								{!isExco && "Exco"}
+								{!isAdmin || (!isExco && "Member")}
 							</span>
 						</div>
 						<div className="flex items-center gap-2">
@@ -285,7 +288,7 @@ export function InviteUsersToGroup({ group }: { group: IGroup }) {
 	};
 
 	return (
-		<div className="">
+		<div className=" p-0 mt-0">
 			<h2 className="text-xl font-bold mb-4">Invite Members to Your Group</h2>
 			<p className="mb-2 text-sm text-default-500">
 				Select organization members to invite, or share the invite link below.
@@ -322,60 +325,50 @@ export function InviteUsersToGroup({ group }: { group: IGroup }) {
 					</button>
 				</div>
 			</div>
-			<ul className="mb-4 flex flex-col gap-2">
+			<CheckboxGroup
+				defaultValue={members.map((m) => m.publicUserData?.identifier || "")}
+				label="Select Members to invite"
+				onValueChange={(set) => setSelected(set)}>
 				{members?.map((m) => (
-					<li key={m.publicUserData?.userId} className="flex items-center gap-3">
-						<Checkbox
-							aria-label={m.publicUserData?.firstName || "User"}
-							checked={
-								m.publicUserData?.userId
-									? selected.includes(m.publicUserData.userId)
-									: false
-							}
-							className={cn(
-								"inline-flex max-w-md w-full bg-content1 m-0",
-								"hover:bg-content2 items-center justify-start",
-								"cursor-pointer rounded-lg gap-2 p-4 border-2 border-transparent",
-								"data-[selected=true]:border-primary",
-							)}
-							value={m.publicUserData?.userId || ""}
-							onChange={() => {
-								const userId = m.publicUserData?.userId;
-
-								if (!userId) return;
-								setSelected((prev) =>
-									prev.includes(userId)
-										? prev.filter((id) => id !== userId)
-										: [...prev, userId],
-								);
-							}}>
-							<div className="w-full flex justify-between gap-2">
-								<User
-									avatarProps={{ size: "md", src: m.publicUserData?.imageUrl }}
-									description={m.publicUserData?.identifier}
-									name={`${m.publicUserData?.firstName} ${m.publicUserData?.lastName}`}
-								/>
-								<div className="flex flex-col items-end gap-1">
-									<Chip color="success" size="sm" variant="flat">
-										{m.role}
-									</Chip>
-								</div>
+					<Checkbox
+						key={m.publicUserData?.identifier}
+						aria-label={m.publicUserData?.firstName || "User"}
+						checked={
+							m.publicUserData?.userId
+								? selected.includes(m.publicUserData.userId)
+								: false
+						}
+						className={cn(
+							"inline-flex max-w-md w-full bg-content1 m-0",
+							"hover:bg-content2 items-center justify-start",
+							"cursor-pointer rounded-lg gap-2 p-4 border-2 border-transparent",
+							"data-[selected=true]:border-primary",
+						)}
+						value={m.publicUserData?.userId || ""}>
+						<div className="w-full flex justify-between gap-2">
+							<User
+								avatarProps={{ size: "md", src: m.publicUserData?.imageUrl }}
+								description={m.publicUserData?.identifier}
+								name={`${m.publicUserData?.firstName} ${m.publicUserData?.lastName}`}
+							/>
+							<div className="flex flex-col items-end gap-1">
+								<Chip color="success" size="sm" variant="flat">
+									{m.role}
+								</Chip>
 							</div>
-						</Checkbox>
-					</li>
+						</div>
+					</Checkbox>
 				))}
-			</ul>
-			<button
-				className={buttonStyles({
-					color: "primary",
-					radius: "full",
-					variant: "shadow",
-				})}
+			</CheckboxGroup>
+			<Divider className="my-4" />
+			<Button
+				color="primary"
+				isLoading={inviteLoading}
 				disabled={inviteLoading || selected.length === 0}
 				type="button"
 				onClick={handleInvite}>
 				{inviteLoading ? "Inviting..." : "Invite Selected"}
-			</button>
+			</Button>
 			{inviteError && <div className="text-danger mt-2">{inviteError}</div>}
 			{inviteSuccess && <div className="text-success mt-2">{inviteSuccess}</div>}
 		</div>
