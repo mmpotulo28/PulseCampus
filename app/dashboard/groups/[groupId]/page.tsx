@@ -12,6 +12,7 @@ import GroupStats from "@/components/groups/GroupStats";
 import GroupThreadsList from "@/components/groups/GroupThreadsList";
 import GroupActions from "@/components/groups/GroupActions";
 import GroupSidePanel from "@/components/groups/GroupSidePanel";
+import { Spinner } from "@heroui/react";
 
 export default function GroupDetailsPage() {
 	const { groupId } = useParams();
@@ -23,7 +24,7 @@ export default function GroupDetailsPage() {
 		getGroup(groupId as string);
 	}, [groupId, organization]);
 
-	if (getGroupLoading) return <div>Loading...</div>;
+	if (getGroupLoading) return <Spinner className="m-auto" />;
 	if (getGroupError || !group) {
 		return (
 			<div className="py-12 px-4 max-w-2xl mx-auto text-center">

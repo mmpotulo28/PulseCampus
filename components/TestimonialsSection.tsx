@@ -1,6 +1,7 @@
 import { Card } from "@heroui/react";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import { title } from "./primitives";
 
 const testimonials = [
 	{
@@ -30,8 +31,11 @@ export default function TestimonialsSection() {
 	return (
 		<section
 			ref={ref}
-			className="py-12 bg-gradient-to-br from-violet-50 to-white dark:from-zinc-900 dark:to-zinc-800">
-			<h2 className="text-2xl font-bold text-center mb-8">What Students Say</h2>
+			className="py-12 bg-gradient-to-br rounded-2xl from-primary/10 via-background to-secondary/10 dark:from-zinc-800 dark:to-zinc-900 flex flex-col items-center gap-8 px-4">
+			<h2
+				className={`${title({ color: "blue" })} mb-8 line-height-1 text-center max-w-2xl mx-auto`}>
+				What Students Say
+			</h2>
 			<div className="flex flex-col md:flex-row gap-6 justify-center items-center">
 				{testimonials.map((t, idx) => (
 					<Card

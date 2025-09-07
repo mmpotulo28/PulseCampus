@@ -1,26 +1,31 @@
 "use client";
-import { ChartBarIcon } from "@heroicons/react/24/solid";
+import Link from "next/link";
+import { useGroup } from "@/hooks/useGroup";
+import GroupCard from "@/components/GroupCard";
+import { Divider, Spinner } from "@heroui/react";
+import { UserGroupIcon } from "@heroicons/react/24/solid";
 
 export default function MetricsPage() {
+	const { groups, groupsLoading, groupsError } = useGroup();
+
+	if (groupsLoading) return <Spinner className="m-auto" />;
+	if (groupsError) return <div>Error loading groups</div>;
+
 	return (
 		<div className="py-8 px-4 max-w-3xl mx-auto">
-			<h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-				<ChartBarIcon className="h-6 w-6 text-success" /> Engagement Metrics
+			<h2 className="text-2xl font-bold flex items-center gap-2 mb-4">
+				<UserGroupIcon className="h-8 w-8 text-primary" />
+				Select a Group to View Metrics
 			</h2>
-			<div className="bg-white dark:bg-zinc-900 rounded-xl shadow p-6 flex flex-col gap-4">
-				<div>
-					<span className="font-semibold">Pulse Score:</span>
-					<span className="ml-2 text-primary text-lg">82%</span>
-				</div>
-				<div>
-					<span className="font-semibold">Voting Heatmap:</span>
-					{/* TODO: Add heatmap visualization */}
-					<div className="mt-2 h-24 bg-gradient-to-r from-primary to-secondary rounded"></div>
-				</div>
-				<div>
-					<span className="font-semibold">Active Members:</span>
-					<span className="ml-2 text-success">36</span>
-				</div>
+			<Divider className="my-4" />
+			<div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+				{groups.map((group) => (
+					<GroupCard
+						key={group.id}
+						group={group}
+						href={`/dashboard/metrics/${group.id}`}
+					/>
+				))}
 			</div>
 		</div>
 	);

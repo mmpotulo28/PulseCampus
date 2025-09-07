@@ -6,13 +6,13 @@ import { button as buttonStyles } from "@heroui/theme";
 import GroupCard from "@/components/GroupCard";
 import { useGroup } from "@/hooks/useGroup";
 import type { IGroup } from "@/types";
-import { Divider } from "@heroui/react";
+import { Divider, Spinner } from "@heroui/react";
 
 export default function GroupsPage() {
 	const { organization } = useOrganization();
 	const { groups, groupsLoading, groupsError } = useGroup();
 
-	if (groupsLoading) return <div>Loading...</div>;
+	if (groupsLoading) return <Spinner className="m-auto" />;
 	if (groupsError) return <div>Error loading groups</div>;
 
 	return (

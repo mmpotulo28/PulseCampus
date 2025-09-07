@@ -3,6 +3,7 @@ import Link from "next/link";
 import { button as buttonStyles } from "@heroui/theme";
 import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/solid";
 import { useThreads } from "@/hooks/useThreads";
+import { Spinner } from "@heroui/react";
 
 export default function ThreadsPage() {
 	const { threads, threadsLoading, threadsError, isAdmin } = useThreads();
@@ -12,8 +13,8 @@ export default function ThreadsPage() {
 			<h2 className="text-xl font-bold mb-4 flex items-center gap-2">
 				<ChatBubbleLeftRightIcon className="h-6 w-6 text-secondary" /> Decision Threads
 			</h2>
-			<div className="flex flex-col ">
-				{threadsLoading && <div>Loading...</div>}
+			<div className="flex flex-col w-full mb-4">
+				{threadsLoading && <Spinner className="m-auto" />}
 				{threadsError && <div>Error loading threads</div>}
 			</div>
 			<ul className="mb-6">

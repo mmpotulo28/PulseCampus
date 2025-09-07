@@ -12,10 +12,11 @@ import { IGroup } from "@/types";
 
 export interface GroupCardProps {
 	group: IGroup;
+	href?: string;
 }
 
-export default function GroupCard({ group }: GroupCardProps) {
-	return (
+export default function GroupCard({ group, href }: GroupCardProps) {
+	const cardContent = (
 		<motion.div
 			animate={{ rotate: [1, -1, 1] }}
 			transition={{
@@ -52,18 +53,26 @@ export default function GroupCard({ group }: GroupCardProps) {
 				</Tooltip>
 			</div>
 			<div className="flex justify-end mt-0 w-full">
-				<Link
-					href={`/dashboard/groups/${group.id}`}
-					className={buttonStyles({
-						color: "secondary",
-						radius: "sm",
-						variant: "shadow",
-						class: "font-bold",
-						size: "sm",
-					})}>
-					View Group
-				</Link>
+				{href ? (
+					<Link href={href}>View Group</Link>
+				) : (
+					<Link
+						href={`/dashboard/groups/${group.id}`}
+						className={buttonStyles({
+							color: "secondary",
+							radius: "sm",
+							variant: "shadow",
+							class: "font-bold",
+							size: "sm",
+						})}>
+						View Group
+					</Link>
+				)}
 			</div>
 		</motion.div>
 	);
+	if (href) {
+		return <Link href={href}>{cardContent}</Link>;
+	}
+	return cardContent;
 }
