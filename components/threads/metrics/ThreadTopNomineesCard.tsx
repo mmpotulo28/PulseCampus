@@ -9,7 +9,7 @@ export default function ThreadTopNomineesCard({
 	winningNominee,
 	onViewNominee,
 }: {
-	topNominees: { option: string; count: number; name?: string }[];
+	topNominees: { option: string; count: number }[];
 	consensus: any;
 	thread: any;
 	winningNominee: string | null;
@@ -64,7 +64,7 @@ export default function ThreadTopNomineesCard({
 												: "border-default-200"
 								}`}>
 								<div className="flex items-center gap-2">
-									<span className="font-bold text-lg">{n.name || n.option}</span>
+									<span className="font-bold text-lg">{n.option}</span>
 									{badge}
 								</div>
 								<div className="flex items-center gap-2 text-xs text-default-500">

@@ -91,23 +91,19 @@ export function useThreadMetrics(threadId: string) {
 
 	// MCQ support: count votes per option
 	const nomineeCounts = useMemo(() => {
-		const counts: Record<string, { name: string; count: number }> = {};
+		const counts: Record<string, number> = {};
 
 		votes.forEach((v) => {
 			const nominee = nominations.find((n) => n.id === v.vote);
 
 			if (Array.isArray(v.vote)) {
 				v.vote.forEach((opt) => {
-					counts[opt] = {
-						name: nominee?.name || opt,
-						count: (counts[opt]?.count || 0) + (v.weight || 1),
-					};
+					counts[nominee?.name || opt] =
+						(counts[nominee?.name || opt] || 0) + (v.weight || 1);
 				});
 			} else {
-				counts[v.vote] = {
-					name: nominee?.name || v.vote,
-					count: (counts[v.vote]?.count || 0) + (v.weight || 1),
-				};
+				counts[nominee?.name || v.vote] =
+					(counts[nominee?.name || v.vote] || 0) + (v.weight || 1);
 			}
 		});
 
@@ -115,10 +111,8 @@ export function useThreadMetrics(threadId: string) {
 	}, [votes]);
 
 	const topNominees = useMemo(() => {
-		console.log("Nominee Counts:", nomineeCounts);
-
 		return Object.entries(nomineeCounts)
-			.map(([option, { count, name }]) => ({ option, count, name }))
+			.map(([option, count]) => ({ option, count: count }))
 			.sort((a, b) => b.count - a.count)
 			.slice(0, 3);
 	}, [nomineeCounts]);
@@ -127,12 +121,12 @@ export function useThreadMetrics(threadId: string) {
 		if (!thread || thread.status?.toLowerCase() !== "closed" || !topNominees.length)
 			return null;
 
-		return topNominees[0].name || topNominees[0].option;
+		return topNominees[0].option;
 	}, [thread, topNominees]);
 
 	const consensus = useMemo(() => {
-		const total = Object.values(nomineeCounts).reduce((a, b) => a + b.count, 0);
-		const maxVotes = Math.max(...Object.values(nomineeCounts).map((c) => c.count), 0);
+		const total = Object.values(nomineeCounts).reduce((a, b) => a + b, 0);
+		const maxVotes = Math.max(...Object.values(nomineeCounts), 0);
 		const agreement = total ? (maxVotes / total) * 100 : 0;
 		const engagement = thread?.voteOptions?.length
 			? (total / thread.voteOptions.length) * 100
