@@ -1,17 +1,23 @@
 "use client";
 import { useParams, useRouter } from "next/navigation";
-import { useThreads } from "@/hooks/useThreads";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Card, Button, Spinner, Divider } from "@heroui/react";
-import { button as buttonStyles } from "@heroui/theme";
 import { TrashIcon } from "@heroicons/react/24/solid";
+
+import { useThreads } from "@/hooks/useThreads";
 
 export default function DeleteThreadPage() {
 	const { threadId } = useParams();
-	const { getThread, thread, threadLoading, threadError, isAdmin } = useThreads();
-	const [deleting, setDeleting] = useState(false);
-	const [deleteError, setDeleteError] = useState<string | null>(null);
-	const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null);
+	const {
+		getThread,
+		thread,
+		threadLoading,
+		isAdmin,
+		deleteThread,
+		deleting,
+		deleteError,
+		deleteSuccess,
+	} = useThreads();
 	const router = useRouter();
 
 	useEffect(() => {
@@ -19,29 +25,16 @@ export default function DeleteThreadPage() {
 	}, [threadId]);
 
 	const handleDelete = async () => {
-		if (!isAdmin || !threadId) return;
-		setDeleting(true);
-		setDeleteError(null);
-		setDeleteSuccess(null);
-		try {
-			const { error } = await (await import("@/lib/db")).default
-				.from("threads")
-				.delete()
-				.eq("id", threadId);
-			if (error) throw error;
-			setDeleteSuccess("Thread deleted!");
+		await deleteThread(threadId as string);
+		if (!deleteError && !deleting) {
 			setTimeout(() => router.push("/dashboard/threads"), 1500);
-		} catch (err: any) {
-			setDeleteError(err.message || "Failed to delete thread");
-		} finally {
-			setDeleting(false);
 		}
 	};
 
 	if (threadLoading || !thread)
 		return (
 			<div className="py-8 px-4 flex justify-center items-center min-h-[40vh]">
-				<Spinner size="lg" color="primary" />
+				<Spinner color="primary" size="lg" />
 			</div>
 		);
 
@@ -56,19 +49,19 @@ export default function DeleteThreadPage() {
 			</p>
 			<div className="flex gap-4 mt-2">
 				<Button
-					type="button"
 					color="danger"
-					radius="full"
-					variant="shadow"
-					isLoading={deleting}
 					disabled={deleting || !isAdmin}
+					isLoading={deleting}
+					radius="full"
+					type="button"
+					variant="shadow"
 					onClick={handleDelete}>
 					Delete Thread
 				</Button>
 				<Button
-					type="button"
 					color="secondary"
 					radius="full"
+					type="button"
 					variant="bordered"
 					onClick={() => router.push(`/dashboard/threads/${threadId}`)}>
 					Cancel

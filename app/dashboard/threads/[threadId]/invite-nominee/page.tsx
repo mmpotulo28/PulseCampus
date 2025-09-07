@@ -1,17 +1,17 @@
 "use client";
-import { useParams, useRouter } from "next/navigation";
-import { useThreads } from "@/hooks/useThreads";
-import { useNominations } from "@/hooks/useNominations";
-import { usePermissions } from "@/hooks/usePermissions";
-import { useUser } from "@clerk/nextjs";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Card, Input, Button, Spinner, Divider } from "@heroui/react";
+import { Card, Input, Button, Divider } from "@heroui/react";
 import { button as buttonStyles } from "@heroui/theme";
 import Link from "next/link";
 
+import { usePermissions } from "@/hooks/usePermissions";
+import { useNominations } from "@/hooks/useNominations";
+import { useThreads } from "@/hooks/useThreads";
+
 export default function InviteNomineePage() {
 	const { threadId } = useParams();
-	const { getThread, thread, threadLoading, threadError } = useThreads();
+	const { getThread } = useThreads();
 	const {
 		nominations,
 		addNomination,
@@ -20,8 +20,6 @@ export default function InviteNomineePage() {
 		addNominationSuccess,
 	} = useNominations(threadId as string);
 	const { isAdmin, isExco } = usePermissions();
-	const { user } = useUser();
-	const router = useRouter();
 
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
@@ -36,8 +34,10 @@ export default function InviteNomineePage() {
 		if (!isAdmin && !isExco) return;
 		if (!threadId || !name || !email) return;
 		const alreadyNominated = nominations.some((n) => n.email === email || n.name === name);
+
 		if (alreadyNominated) {
 			setInviteSuccess("Nominee already invited.");
+
 			return;
 		}
 		await addNomination({
@@ -61,40 +61,41 @@ export default function InviteNomineePage() {
 		<Card className="p-8 rounded-2xl shadow-xl bg-white dark:bg-zinc-900 flex flex-col gap-6 border border-primary/20 max-w-lg mx-auto mt-10">
 			<h2 className="text-xl font-bold mb-2">Invite Nominee to Thread</h2>
 			<p className="text-sm text-default-500 mb-2">
-				Enter the nominee's name and email address to invite them to this voting thread.
+				Enter the nominee&apos;s name and email address to invite them to this voting
+				thread.
 			</p>
-			<form onSubmit={handleInvite} className="flex flex-col gap-4">
+			<form className="flex flex-col gap-4" onSubmit={handleInvite}>
 				<Input
-					label="Nominee Name"
-					value={name}
-					onChange={(e) => setName(e.target.value)}
-					placeholder="Full name"
 					required
 					disabled={addNominationLoading}
+					label="Nominee Name"
 					maxLength={60}
+					placeholder="Full name"
+					value={name}
+					onChange={(e) => setName(e.target.value)}
 				/>
 				<Input
+					required
+					disabled={addNominationLoading}
 					label="Nominee Email"
+					maxLength={80}
+					placeholder="nominee@email.com"
 					type="email"
 					value={email}
 					onChange={(e) => setEmail(e.target.value)}
-					placeholder="nominee@email.com"
-					required
-					disabled={addNominationLoading}
-					maxLength={80}
 				/>
 				<Button
-					type="submit"
-					color="primary"
-					radius="full"
-					variant="shadow"
-					isLoading={addNominationLoading}
-					disabled={addNominationLoading || !name || !email || (!isAdmin && !isExco)}
 					className={buttonStyles({
 						color: "primary",
 						radius: "full",
 						variant: "shadow",
-					})}>
+					})}
+					color="primary"
+					disabled={addNominationLoading || !name || !email || (!isAdmin && !isExco)}
+					isLoading={addNominationLoading}
+					radius="full"
+					type="submit"
+					variant="shadow">
 					Invite Nominee
 				</Button>
 				{addNominationError && <div className="text-danger mt-2">{addNominationError}</div>}
@@ -105,12 +106,12 @@ export default function InviteNomineePage() {
 			</form>
 			<Divider className="my-2" />
 			<Link
-				href={`/dashboard/threads/${threadId}`}
 				className={buttonStyles({
 					color: "secondary",
 					radius: "full",
 					variant: "bordered",
-				})}>
+				})}
+				href={`/dashboard/threads/${threadId}`}>
 				Back to Thread
 			</Link>
 		</Card>

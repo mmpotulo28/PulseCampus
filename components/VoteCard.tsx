@@ -1,8 +1,10 @@
+import type { IThread } from "@/types";
+
 import { Button, Card } from "@heroui/react";
 import { motion, useAnimation } from "framer-motion";
 import { useState } from "react";
+
 import { useVoting } from "@/hooks/useVoting";
-import type { IThread } from "@/types";
 
 export interface VoteCardProps {
 	thread: IThread;
@@ -11,7 +13,7 @@ export interface VoteCardProps {
 
 export default function VoteCard({ thread, disabled = false }: VoteCardProps) {
 	const controls = useAnimation();
-	const [paused, setPaused] = useState(false);
+	const [, setPaused] = useState(false);
 
 	const {
 		votes,
@@ -38,7 +40,7 @@ export default function VoteCard({ thread, disabled = false }: VoteCardProps) {
 	const handleResume = () => {
 		setPaused(false);
 		controls.start({
-			rotate: [10, -10, 10],
+			rotate: [1, -1, 1],
 			transition: {
 				repeat: Infinity,
 				repeatType: "loop",
@@ -51,12 +53,12 @@ export default function VoteCard({ thread, disabled = false }: VoteCardProps) {
 	return (
 		<motion.div
 			animate={controls}
-			initial={{ rotate: 10 }}
-			onMouseEnter={handlePause}
-			onMouseLeave={handleResume}
-			onFocus={handlePause}
+			className="mx-auto origin-top w-full max-w-xs"
+			initial={{ rotate: 1 }}
 			onBlur={handleResume}
-			className="mx-auto origin-top w-full max-w-xs">
+			onFocus={handlePause}
+			onMouseEnter={handlePause}
+			onMouseLeave={handleResume}>
 			<Card className="p-6 rounded-2xl shadow-xl bg-background border border-primary/20">
 				<div className="flex flex-col gap-3">
 					<div className="flex items-center gap-2">
@@ -68,15 +70,16 @@ export default function VoteCard({ thread, disabled = false }: VoteCardProps) {
 					<div className="font-semibold text-lg mt-2">{thread.title}</div>
 					<div className="flex gap-2 mt-4">
 						<Button
-							isLoading={votingCreateLoading}
 							className="bg-primary text-background rounded-full font-semibold hover:bg-secondary transition"
+							disabled={disabled || votingCreateLoading}
+							isLoading={votingCreateLoading}
 							onPress={() => submitVote("yes")}>
 							{votingCreateLoading && userVote === "yes" ? "Voting..." : "Yes"}
 						</Button>
 
 						<Button
-							isLoading={votingCreateLoading}
 							className="bg-background border border-primary px-4 py-2 rounded-full font-semibold text-primary hover:bg-primary hover:text-background transition"
+							isLoading={votingCreateLoading}
 							onPress={() => submitVote("no")}>
 							{votingCreateLoading && userVote === "no" ? "Voting..." : "No"}
 						</Button>

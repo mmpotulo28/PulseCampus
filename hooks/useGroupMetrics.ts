@@ -1,7 +1,9 @@
+import type { IThread, IVote, IComment } from "@/types";
+
 import { useMemo, useState, useEffect } from "react";
+
 import { useCache } from "@/hooks/useCache";
 import { useThreads } from "@/hooks/useThreads";
-import type { IThread, IVote, IComment } from "@/types";
 import supabase from "@/lib/db";
 
 export interface GroupMetrics {
@@ -36,6 +38,7 @@ export function useGroupMetrics(
 				setGroupMetricsState((prev) => ({ ...prev, dataLoading: true }));
 				// Try cache first
 				const cached = getCache<{ votes: IVote[]; comments: IComment[] }>(cacheKey);
+
 				if (cached) {
 					setGroupMetricsState({
 						votes: cached.votes || [],
@@ -43,6 +46,7 @@ export function useGroupMetrics(
 						dataLoading: false,
 						dataError: null,
 					});
+
 					return;
 				}
 				try {
@@ -60,6 +64,7 @@ export function useGroupMetrics(
 							"thread_id",
 							threads.map((t) => t.id),
 						);
+
 					setGroupMetricsState({
 						votes: votesData || [],
 						comments: commentsData || [],
@@ -71,6 +76,7 @@ export function useGroupMetrics(
 						comments: commentsData || [],
 					});
 				} catch (err: any) {
+					console.error("Error fetching metrics data:", err);
 					setGroupMetricsState((prev) => ({
 						...prev,
 						dataLoading: false,
@@ -90,7 +96,6 @@ export function useGroupMetrics(
 
 	useEffect(() => {
 		fetchAllData(threads);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [threads, cacheKey]);
 
 	const loading = threadsLoading || groupMetricsState.dataLoading;
@@ -98,6 +103,7 @@ export function useGroupMetrics(
 
 	const activeMembers = useMemo(() => {
 		if (loading) return 0;
+
 		return new Set([
 			...(groupMetricsState.votes?.map((v: IVote) => v.user_id) || []),
 			...(groupMetricsState.comments?.map((c: IComment) => c.user_id) || []),
@@ -106,6 +112,7 @@ export function useGroupMetrics(
 
 	const pulseScore = useMemo(() => {
 		if (loading || threads.length === 0) return 0;
+
 		return Math.round(
 			(((groupMetricsState.votes?.length || 0) + (groupMetricsState.comments?.length || 0)) /
 				(threads.length * Math.max(activeMembers, 1))) *
@@ -122,17 +129,21 @@ export function useGroupMetrics(
 	const heatmap = useMemo(() => {
 		if (loading) return {};
 		const map: Record<string, number> = {};
+
 		groupMetricsState.votes?.forEach((v: IVote) => {
 			if (v.created_at) {
 				const day = new Date(v.created_at).toLocaleDateString();
+
 				map[day] = (map[day] || 0) + 1;
 			}
 		});
+
 		return map;
 	}, [groupMetricsState.votes, loading]);
 
 	const topThreads = useMemo(() => {
 		if (loading) return [];
+
 		return threads
 			.map((t) => ({
 				...t,
@@ -145,6 +156,7 @@ export function useGroupMetrics(
 
 	const recentComments = useMemo(() => {
 		if (loading) return [];
+
 		return (
 			groupMetricsState.comments
 				?.sort(
@@ -156,7 +168,10 @@ export function useGroupMetrics(
 		);
 	}, [groupMetricsState.comments, loading]);
 
-	const groupMetrics: GroupMetrics & { loading: boolean; error: string | null } = {
+	const groupMetrics: GroupMetrics & {
+		loading: boolean;
+		error: string | null;
+	} = {
 		threads,
 		votes: groupMetricsState.votes,
 		comments: groupMetricsState.comments,

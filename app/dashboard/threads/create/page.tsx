@@ -1,11 +1,10 @@
 "use client";
+import type { OrganizationMembershipResource } from "@clerk/types";
+
 import { useState, useEffect } from "react";
 import { button as buttonStyles } from "@heroui/theme";
 import { Input } from "@heroui/input";
 import { useOrganization } from "@clerk/nextjs";
-import { useThreads } from "@/hooks/useThreads";
-import { useGroup } from "@/hooks/useGroup";
-import { useNominations } from "@/hooks/useNominations";
 import {
 	Spinner,
 	Select,
@@ -16,20 +15,14 @@ import {
 	DateInput,
 	TimeInput,
 } from "@heroui/react";
-import { OrganizationSidePanel } from "../../groups/components";
-import type { OrganizationMembershipResource } from "@clerk/types";
-import { PlusIcon } from "@heroicons/react/24/outline";
 import { CalendarDate, Time } from "@internationalized/date";
-import { INomination } from "@/types";
 
-const nomineeSuggestions = [
-	{ label: "Anele M.", key: "anele_m", description: "SRC President" },
-	{ label: "Thandi S.", key: "thandi_s", description: "Club Treasurer" },
-	{ label: "Sipho N.", key: "sipho_n", description: "Residence Committee" },
-	{ label: "Lindiwe K.", key: "lindiwe_k", description: "Sports Chair" },
-	{ label: "Nomvula D.", key: "nomvula_d", description: "Academic Rep" },
-	{ label: "Other", key: "other", description: "Custom nominee" },
-];
+import { OrganizationSidePanel } from "../../groups/components";
+
+import { useThreads } from "@/hooks/useThreads";
+import { useGroup } from "@/hooks/useGroup";
+import { useNominations } from "@/hooks/useNominations";
+import { INomination } from "@/types";
 
 export default function CreateThreadPage() {
 	const [title, setTitle] = useState("");
@@ -53,6 +46,7 @@ export default function CreateThreadPage() {
 		// Fetch group members when a group is selected
 		const fetchMembers = async () => {
 			const membersList = await organization?.getMemberships();
+
 			if (membersList) {
 				setMembers(membersList.data);
 			}
@@ -120,10 +114,12 @@ export default function CreateThreadPage() {
 		const isTypeMcq = voteType === "mcq";
 		const isNominationPass =
 			(addNominationSuccess && !addNominationLoading && !addNominationError) || !isTypeMcq;
+
 		if (isCreatePass && isNominationPass) {
 			const timer = setTimeout(() => {
 				window.location.href = "/dashboard/threads";
 			}, 3000);
+
 			return () => clearTimeout(timer);
 		}
 	}, [createSuccess, createLoading, createError]);
@@ -147,72 +143,72 @@ export default function CreateThreadPage() {
 						Only organization admins can create proposals.
 					</div>
 				)}
-				<form onSubmit={handleSubmit} className="flex flex-col gap-4">
+				<form className="flex flex-col gap-4" onSubmit={handleSubmit}>
 					<Select
+						required
+						disabled={!isAdmin || createLoading || groups.length === 0}
 						label="Select Group"
 						placeholder="Choose a group"
 						selectedKeys={selectedGroupId ? [selectedGroupId] : []}
 						onSelectionChange={(keys) =>
 							setSelectedGroupId(Array.from(keys)[0] as string)
-						}
-						disabled={!isAdmin || createLoading || groups.length === 0}
-						required>
+						}>
 						{groups.map((g) => (
 							<SelectItem key={g.id}>{g.name}</SelectItem>
 						))}
 					</Select>
 
 					<Input
-						label="Title"
-						value={title}
-						onChange={(e) => setTitle(e.target.value)}
-						placeholder="e.g. Spring Festival Proposal"
 						required
-						disabled={!isAdmin || !selectedGroupId || createLoading}
-						maxLength={60}
 						description="Proposal title (min 5 chars)."
+						disabled={!isAdmin || !selectedGroupId || createLoading}
 						errorMessage={
 							title.length > 0 && title.length < 5 ? "Title too short." : undefined
 						}
+						label="Title"
+						maxLength={60}
+						placeholder="e.g. Spring Festival Proposal"
+						value={title}
+						onChange={(e) => setTitle(e.target.value)}
 					/>
 					<Input
-						label="Description"
-						value={desc}
-						onChange={(e) => setDesc(e.target.value)}
-						placeholder="Describe your proposal..."
 						required
-						disabled={!isAdmin || !selectedGroupId || createLoading}
-						maxLength={200}
 						description="Describe your proposal (min 10 chars)."
+						disabled={!isAdmin || !selectedGroupId || createLoading}
 						errorMessage={
 							desc.length > 0 && desc.length < 10
 								? "Description too short."
 								: undefined
 						}
+						label="Description"
+						maxLength={200}
+						placeholder="Describe your proposal..."
+						value={desc}
+						onChange={(e) => setDesc(e.target.value)}
 					/>
 					{/* Voting type selector */}
 					<div className="flex flex-col gap-2">
-						<label className="font-semibold text-sm mb-1">Voting Type</label>
+						<span className="font-semibold text-sm mb-1">Voting Type</span>
 						<div className="flex gap-4">
 							<label>
 								<input
-									type="radio"
-									name="voteType"
-									value="yesno"
 									checked={voteType === "yesno"}
-									onChange={() => setVoteType("yesno")}
 									disabled={createLoading}
+									name="voteType"
+									type="radio"
+									value="yesno"
+									onChange={() => setVoteType("yesno")}
 								/>{" "}
 								Yes / No
 							</label>
 							<label>
 								<input
-									type="radio"
-									name="voteType"
-									value="mcq"
 									checked={voteType === "mcq"}
-									onChange={() => setVoteType("mcq")}
 									disabled={createLoading}
+									name="voteType"
+									type="radio"
+									value="mcq"
+									onChange={() => setVoteType("mcq")}
 								/>{" "}
 								Multiple Choice
 							</label>
@@ -224,8 +220,7 @@ export default function CreateThreadPage() {
 							<div className="flex gap-2">
 								<Autocomplete
 									className="max-w-xs"
-									label="Proposed Nominees"
-									placeholder="Type or select nominee"
+									disabled={createLoading || !isAdmin || !selectedGroupId}
 									items={members.map((m) => ({
 										label: m.publicUserData?.firstName || "Unknown",
 										key: m.publicUserData?.identifier || m.id,
@@ -235,28 +230,29 @@ export default function CreateThreadPage() {
 										id: m.id,
 										thread_id: "", // can be set later when thread is created
 									}))}
-									disabled={createLoading || !isAdmin || !selectedGroupId}
-									onChange={(value) => console.log("value changed", value)}
-									multiple={true}>
+									label="Proposed Nominees"
+									multiple={true}
+									placeholder="Type or select nominee"
+									onChange={(value) => console.log("value changed", value)}>
 									{(nominee) => (
 										<AutocompleteItem
 											key={nominee.key}
+											description={nominee.email}
 											title={nominee.label}
 											onClick={() => {
 												setNominationInput(nominee);
 												console.log("selected", nominee);
 											}}
-											description={nominee.email}
 										/>
 									)}
 								</Autocomplete>
 								<Button
-									color="primary"
-									variant="bordered"
-									size="lg"
 									isIconOnly
-									type="button"
+									color="primary"
 									disabled={!nominationInput || createLoading}
+									size="lg"
+									type="button"
+									variant="bordered"
 									onPress={() => handleAddNomination(nominationInput)}>
 									Add
 								</Button>
@@ -268,10 +264,10 @@ export default function CreateThreadPage() {
 										className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center gap-2">
 										{opt.label}
 										<Button
-											size="sm"
-											color="danger"
-											variant="light"
 											isIconOnly
+											color="danger"
+											size="sm"
+											variant="light"
 											onPress={() => handleRemoveNomination(opt)}>
 											&times;
 										</Button>
@@ -288,9 +284,8 @@ export default function CreateThreadPage() {
 					<div className="flex flex-col md:flex-row gap-4">
 						<DateInput
 							className="max-w-sm"
+							description="Select the voting deadline date."
 							label="Deadline Date"
-							value={deadlineDate}
-							onChange={setDeadlineDate}
 							placeholderValue={
 								new CalendarDate(
 									new Date().getFullYear(),
@@ -298,17 +293,22 @@ export default function CreateThreadPage() {
 									new Date().getDate(),
 								)
 							}
-							description="Select the voting deadline date."
+							value={deadlineDate}
+							onChange={setDeadlineDate}
 						/>
 						<TimeInput
+							description="Select the voting deadline time."
 							label="Deadline Time"
 							value={deadlineTime}
 							onChange={setDeadlineTime}
-							description="Select the voting deadline time."
 						/>
 					</div>
 					<button
-						type="submit"
+						className={buttonStyles({
+							color: "secondary",
+							radius: "full",
+							variant: "shadow",
+						})}
 						disabled={
 							createLoading ||
 							!title ||
@@ -321,11 +321,7 @@ export default function CreateThreadPage() {
 							!deadlineTime ||
 							(voteType === "mcq" && pendingNominations.length < 1)
 						}
-						className={buttonStyles({
-							color: "secondary",
-							radius: "full",
-							variant: "shadow",
-						})}>
+						type="submit">
 						{createLoading ? <Spinner size="sm" /> : "Create Proposal"}
 					</button>
 					{createError && <div className="text-danger mt-2">{createError}</div>}
@@ -333,7 +329,7 @@ export default function CreateThreadPage() {
 				</form>
 			</div>
 			<div className="w-full flex-1">
-				<OrganizationSidePanel isAdmin={isAdmin} groups={groups} />
+				<OrganizationSidePanel />
 			</div>
 		</div>
 	);

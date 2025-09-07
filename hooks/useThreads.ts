@@ -1,8 +1,11 @@
+import type { INomination, IThread } from "@/types";
+
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
-import type { INomination, IThread } from "@/types";
 import { useUser } from "@clerk/nextjs";
+
 import { usePermissions } from "./usePermissions";
+
 import { useNominations } from "@/hooks/useNominations";
 
 const supabase = createClient(
@@ -21,11 +24,15 @@ export function useThreads(groupId?: string) {
 	const [threadError, setThreadError] = useState<string | null>(null);
 
 	const { user } = useUser();
-	const { isAdmin, isExco, isMember } = usePermissions();
+	const { isAdmin } = usePermissions();
 
 	const [createLoading, setCreateLoading] = useState(false);
 	const [createError, setCreateError] = useState<string | null>(null);
 	const [createSuccess, setCreateSuccess] = useState<string | null>(null);
+
+	const [deleteError, setDeleteError] = useState<string | null>(null);
+	const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null);
+	const [deleting, setDeleting] = useState(false);
 
 	const { addNomination } = useNominations(""); // Use directly for insertion
 
@@ -35,8 +42,10 @@ export function useThreads(groupId?: string) {
 
 		try {
 			let query = supabase.from("threads").select("*");
+
 			if (groupId) query = query.eq("group_id", groupId);
 			const { data, error } = await query;
+
 			if (error) throw error;
 			setThreads(data || []);
 		} catch (err: any) {
@@ -61,6 +70,7 @@ export function useThreads(groupId?: string) {
 					.select("*")
 					.eq("id", threadId)
 					.single();
+
 				if (error) {
 					throw error;
 				}
@@ -89,35 +99,42 @@ export function useThreads(groupId?: string) {
 		if (!isAdmin) {
 			setCreateError("Only organization admins can create threads.");
 			setCreateLoading(false);
+
 			return;
 		}
 		if (!groupId) {
 			setCreateError("No group selected.");
 			setCreateLoading(false);
+
 			return;
 		}
 		if (title.length < 5) {
 			setCreateError("Title must be at least 5 characters.");
 			setCreateLoading(false);
+
 			return;
 		}
 		if (description.length < 10) {
 			setCreateError("Description must be at least 10 characters.");
 			setCreateLoading(false);
+
 			return;
 		}
 		if (threads.some((t) => t.title.toLowerCase() === title.toLowerCase())) {
 			setCreateError("A thread with this title already exists in the group.");
 			setCreateLoading(false);
+
 			return;
 		}
 		if (!deadline) {
 			setCreateError("Deadline is required.");
 			setCreateLoading(false);
+
 			return;
 		}
 
 		let createdThreadId: string | null = null;
+
 		console.log("Creating thread with nominations:", nominations);
 
 		try {
@@ -136,6 +153,7 @@ export function useThreads(groupId?: string) {
 					},
 				])
 				.select("id");
+
 			if (error) throw error;
 			createdThreadId = data?.[0]?.id;
 
@@ -162,6 +180,7 @@ export function useThreads(groupId?: string) {
 		) => {
 			try {
 				const { error } = await supabase.from("threads").update(updates).eq("id", threadId);
+
 				if (error) throw error;
 				await fetchThreads();
 				await getThread(threadId);
@@ -172,17 +191,30 @@ export function useThreads(groupId?: string) {
 		[fetchThreads, getThread],
 	);
 
+	// Move deleteThread logic here with states
 	const deleteThread = useCallback(
 		async (threadId: string) => {
+			if (!isAdmin || !threadId) {
+				setDeleteError("You do not have permission to delete this thread.");
+
+				return;
+			}
+			setDeleting(true);
+			setDeleteError(null);
+			setDeleteSuccess(null);
 			try {
 				const { error } = await supabase.from("threads").delete().eq("id", threadId);
+
 				if (error) throw error;
+				setDeleteSuccess("Thread deleted!");
 				await fetchThreads();
 			} catch (err: any) {
-				console.error("Error deleting thread:", err);
+				setDeleteError(err.message || "Failed to delete thread");
+			} finally {
+				setDeleting(false);
 			}
 		},
-		[fetchThreads],
+		[isAdmin, fetchThreads],
 	);
 
 	return {
@@ -200,5 +232,8 @@ export function useThreads(groupId?: string) {
 		isAdmin,
 		updateThread,
 		deleteThread,
+		deleting,
+		deleteError,
+		deleteSuccess,
 	};
 }

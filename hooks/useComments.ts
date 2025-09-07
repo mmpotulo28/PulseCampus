@@ -1,6 +1,7 @@
+import type { IComment } from "@/types";
+
 import { useState, useEffect, useCallback } from "react";
 import { createClient, REALTIME_LISTEN_TYPES } from "@supabase/supabase-js";
-import type { IComment } from "@/types";
 import { useUser } from "@clerk/nextjs";
 
 const supabase = createClient(
@@ -27,6 +28,7 @@ export function useComments(threadId: string) {
 			setComments([]);
 			setCommentsLoading(false);
 			setCommentsError("No threadId provided");
+
 			return;
 		}
 
@@ -65,6 +67,7 @@ export function useComments(threadId: string) {
 				},
 				(payload) => {
 					// On any change, refetch comments
+					console.log("Realtime comment change:", payload); // Debug log
 					fetchComments();
 				},
 			)
@@ -84,16 +87,19 @@ export function useComments(threadId: string) {
 			if (!user?.id) {
 				setAddCommentError("You must be signed in to comment.");
 				setAddCommentLoading(false);
+
 				return;
 			}
 			if (!threadId) {
 				setAddCommentError("No thread selected.");
 				setAddCommentLoading(false);
+
 				return;
 			}
 			if (!text || text.length < 2) {
 				setAddCommentError("Comment is too short.");
 				setAddCommentLoading(false);
+
 				return;
 			}
 
@@ -108,6 +114,7 @@ export function useComments(threadId: string) {
 					},
 				])
 				.select();
+
 			if (error) {
 				setAddCommentError(error.message);
 			} else {

@@ -1,7 +1,8 @@
-import { IThread } from "@/types";
 import { UserGroupIcon, ChatBubbleLeftRightIcon, StarIcon } from "@heroicons/react/24/outline";
 import { Card } from "@heroui/card";
 import { FaRegCommentDots } from "react-icons/fa";
+
+import { IThread } from "@/types";
 
 export const StatsCard = ({
 	icon,
@@ -18,8 +19,8 @@ export const StatsCard = ({
 }) => (
 	<Card
 		className={`flex flex-col items-center justify-center gap-2 p-4 bg-gradient-to-br from-${color}/20 to-background/80 shadow shadow-${color}-500`}
-		shadow="lg"
-		radius="md">
+		radius="md"
+		shadow="lg">
 		{icon}
 		<span className="text-lg font-semibold">{label}</span>
 		<span className={`text-3xl font-bold text-${color}`}>{value}</span>
@@ -32,11 +33,8 @@ export function StatCards({
 	activeMembers,
 	threadsCount,
 	totalComments,
-	mostActiveCommenterId,
-	mostActiveCommenterCount,
 	pulseScore,
 	avgVotesPerThread,
-	topVotedThread,
 }: {
 	activeMembers: number;
 	threadsCount: number;
@@ -51,31 +49,31 @@ export function StatCards({
 		<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
 			<StatsCard
 				color="primary"
+				icon={<UserGroupIcon className="h-8 w-8 text-danger" />}
 				label="Active Members"
 				value={activeMembers}
-				icon={<UserGroupIcon className="h-8 w-8 text-danger" />}
 			/>
 
 			<StatsCard
 				color="secondary"
+				icon={<ChatBubbleLeftRightIcon className="h-8 w-8 text-secondary" />}
 				label="Threads"
 				value={threadsCount}
-				icon={<ChatBubbleLeftRightIcon className="h-8 w-8 text-secondary" />}
 			/>
 
 			<StatsCard
 				color="warning"
+				icon={<FaRegCommentDots className="h-8 w-8 text-warning" />}
 				label="Total Comments"
 				value={totalComments}
-				icon={<FaRegCommentDots className="h-8 w-8 text-warning" />}
 			/>
 
 			<StatsCard
 				color="primary"
-				label="Pulse Score"
-				value={`${pulseScore}%`}
 				icon={<StarIcon className="h-8 w-8 text-primary" />}
+				label="Pulse Score"
 				subtext={`Avg votes/thread: ${avgVotesPerThread}`}
+				value={`${pulseScore}%`}
 			/>
 		</div>
 	);

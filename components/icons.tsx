@@ -1,15 +1,15 @@
 import * as React from "react";
-
-import { IconSvgProps } from "@/types";
 import Image from "next/image";
 
-export const Logo: React.FC<IconSvgProps> = ({ size = 36, width, height, ...props }) => (
+import { IconSvgProps } from "@/types";
+
+export const Logo: React.FC<IconSvgProps> = ({ size = 70 }) => (
 	<Image
-		className="rounded"
-		src={"/logo-icon.png"}
 		alt="PulseCampus Logo"
-		width={70}
-		height={70}
+		className="rounded"
+		height={size}
+		src={"/logo-icon.png"}
+		width={size}
 	/>
 );
 

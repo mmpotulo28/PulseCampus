@@ -1,19 +1,17 @@
-import { Button, Card, Progress, Divider } from "@heroui/react";
-import { motion, useAnimation } from "framer-motion";
+import type { IThread } from "@/types";
+
+import { Button, Card } from "@heroui/react";
 import { useState, useEffect } from "react";
+
 import { useVoting } from "@/hooks/useVoting";
 import { useNominations } from "@/hooks/useNominations";
-import type { IThread } from "@/types";
 
 export interface MultipleVoteCardProps {
 	thread: IThread;
 	disabled?: boolean;
 }
 
-export default function MultipleVoteCard({ thread, disabled = false }: MultipleVoteCardProps) {
-	const controls = useAnimation();
-	const [paused, setPaused] = useState(false);
-
+export default function MultipleVoteCard({ thread }: MultipleVoteCardProps) {
 	const {
 		votes,
 		userVote,
@@ -44,24 +42,6 @@ export default function MultipleVoteCard({ thread, disabled = false }: MultipleV
 	useEffect(() => {
 		if (thread.id) fetchNominations();
 	}, [thread.id, fetchNominations]);
-
-	const handlePause = () => {
-		setPaused(true);
-		controls.stop();
-	};
-
-	const handleResume = () => {
-		setPaused(false);
-		controls.start({
-			rotate: [10, -10, 10],
-			transition: {
-				repeat: Infinity,
-				repeatType: "loop",
-				duration: 2,
-				ease: "easeInOut",
-			},
-		});
-	};
 
 	const handleVote = (nomineeId: string) => {
 		if (!nomineeId) return;
@@ -104,19 +84,19 @@ export default function MultipleVoteCard({ thread, disabled = false }: MultipleV
 										)}
 									</div>
 									<Button
-										size="sm"
 										color={
 											selectedNomineeId === nominee.id
 												? "primary"
 												: "secondary"
 										}
-										variant={
-											selectedNomineeId === nominee.id ? "shadow" : "bordered"
-										}
+										disabled={votingCreateLoading}
 										isLoading={
 											votingCreateLoading && selectedNomineeId === nominee.id
 										}
-										disabled={votingCreateLoading}
+										size="sm"
+										variant={
+											selectedNomineeId === nominee.id ? "shadow" : "bordered"
+										}
 										onPress={() => handleVote(nominee.id)}>
 										{votingCreateLoading && selectedNomineeId === nominee.id
 											? "Voting..."

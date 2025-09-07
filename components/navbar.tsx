@@ -1,13 +1,5 @@
 "use client";
-import {
-	Navbar as HeroUINavbar,
-	NavbarContent,
-	NavbarMenu,
-	NavbarMenuToggle,
-	NavbarBrand,
-	NavbarItem,
-	NavbarMenuItem,
-} from "@heroui/navbar";
+import { Navbar as HeroUINavbar, NavbarContent, NavbarBrand, NavbarItem } from "@heroui/navbar";
 import { Button } from "@heroui/button";
 import { Kbd } from "@heroui/kbd";
 import { Link } from "@heroui/link";
@@ -15,7 +7,9 @@ import { Input } from "@heroui/input";
 import { link as linkStyles } from "@heroui/theme";
 import NextLink from "next/link";
 import clsx from "clsx";
-import { Avatar, Tab, Tabs } from "@heroui/react";
+import { Avatar } from "@heroui/react";
+import { UserButton } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 import { siteConfig } from "@/config/site";
 import { ThemeSwitch } from "@/components/theme-switch";
@@ -27,18 +21,7 @@ import {
 	SearchIcon,
 	Logo,
 } from "@/components/icons";
-import { UserButton } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
 import { tabs } from "@/lib/data";
-
-// Custom nav items for PulseCampus
-const navItems = [
-	{ label: "Home", href: "/" },
-	{ label: "Features", href: "#features" },
-	{ label: "Pricing", href: "#pricing" },
-	{ label: "FAQ", href: "#faq" },
-	{ label: "Sign Up", href: "/signup" },
-];
 
 export const Navbar = () => {
 	const router = useRouter();
@@ -64,7 +47,7 @@ export const Navbar = () => {
 	);
 
 	return (
-		<HeroUINavbar maxWidth="xl" position="sticky" className="bg-background shadow-lg">
+		<HeroUINavbar className="bg-background shadow-lg" maxWidth="xl" position="sticky">
 			<NavbarContent className="basis-1/5 sm:basis-full" justify="start">
 				<NavbarBrand as="li" className="gap-3 max-w-fit">
 					<NextLink className="flex justify-start items-center gap-2" href="/">

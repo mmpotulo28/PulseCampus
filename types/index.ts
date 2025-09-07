@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { SVGProps } from "react";
 
 export type IconSvgProps = SVGProps<SVGSVGElement> & {
@@ -86,4 +87,34 @@ export interface INomination {
 	label: string;
 	key: string;
 	created_at?: string;
+}
+
+export interface iUseCache {
+	setCache: (key: string, value: any) => void;
+	getCache: <T = any>(key: string) => T | undefined;
+	clearCache: () => void;
+	purgeCache: (key: string) => void;
+	cacheCleared: boolean;
+	cacheError: string | null;
+	cacheMessage: string | null;
+}
+
+export interface CreateGroupFormProps {
+	name: string;
+	setName: (v: string) => void;
+	desc: string;
+	setDesc: (v: string) => void;
+	isPublic: boolean;
+	setIsPublic: (v: boolean) => void;
+	activity: number;
+	setActivity: (v: number) => void;
+	orgId: string;
+	orgName: string;
+	isAdmin: boolean;
+	createGroup: (...args: any[]) => Promise<void>;
+	createLoading: boolean;
+	createError: string | null;
+	createSuccess: string | null;
+	groups: any[];
+	handleSubmit: (e: React.FormEvent) => void;
 }

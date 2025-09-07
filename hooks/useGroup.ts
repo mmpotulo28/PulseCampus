@@ -1,7 +1,9 @@
+import type { IGroup } from "@/types";
+
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
-import type { IGroup } from "@/types";
 import { useOrganization, useUser } from "@clerk/nextjs";
+
 import { usePermissions } from "./usePermissions";
 
 const supabase = createClient(
@@ -20,7 +22,7 @@ export function useGroup() {
 	const [getGroupError, setGetGroupError] = useState<string | null>(null);
 
 	const { user } = useUser();
-	const { isAdmin, isExco, isMember } = usePermissions();
+	const { isAdmin } = usePermissions();
 
 	const [createLoading, setCreateLoading] = useState(false);
 	const [createError, setCreateError] = useState<string | null>(null);
@@ -46,6 +48,7 @@ export function useGroup() {
 				.from("groups")
 				.select("*")
 				.eq("org_id", organization?.id);
+
 			if (error) throw error;
 
 			setGroups(data || []);
@@ -71,6 +74,7 @@ export function useGroup() {
 				.select("*")
 				.eq("id", groupId)
 				.single();
+
 			if (error) throw error;
 			setGroup(data);
 		} catch (err: any) {
@@ -95,26 +99,31 @@ export function useGroup() {
 			if (!isAdmin) {
 				setCreateError("Only organization admins can create groups.");
 				setCreateLoading(false);
+
 				return;
 			}
 			if (!organization?.id) {
 				setCreateError("No organization selected.");
 				setCreateLoading(false);
+
 				return;
 			}
 			if (name.length < 3) {
 				setCreateError("Group name must be at least 3 characters.");
 				setCreateLoading(false);
+
 				return;
 			}
 			if (description.length < 10) {
 				setCreateError("Description must be at least 10 characters.");
 				setCreateLoading(false);
+
 				return;
 			}
 			if (groups.some((g) => g.name.toLowerCase() === name.toLowerCase())) {
 				setCreateError("Group name already exists.");
 				setCreateLoading(false);
+
 				return;
 			}
 			try {
@@ -130,6 +139,7 @@ export function useGroup() {
 						members_list: JSON.stringify([{ name: user?.fullName, role: "Admin" }]),
 					},
 				]);
+
 				if (error) throw error;
 				setCreateSuccess("Group created successfully.");
 				await fetchGroups();
@@ -154,6 +164,7 @@ export function useGroup() {
 				.select("members_list")
 				.eq("id", groupId)
 				.single();
+
 			if (error) throw error;
 			const currentList = data?.members_list || [];
 			const newMembers = userIds.map((id) => ({
@@ -169,6 +180,7 @@ export function useGroup() {
 					members: updatedList.length,
 				})
 				.eq("id", groupId);
+
 			if (updateError) throw updateError;
 
 			setInviteSuccess("Members invited successfully.");
@@ -204,6 +216,7 @@ export function useGroup() {
 						activity: updates.activity,
 					})
 					.eq("id", groupId);
+
 				if (error) throw error;
 				setUpdateSuccess("Group updated successfully.");
 				await fetchGroups();
@@ -225,6 +238,7 @@ export function useGroup() {
 
 			try {
 				const { error } = await supabase.from("groups").delete().eq("id", groupId);
+
 				if (error) throw error;
 				setDeleteSuccess("Group deleted successfully.");
 				await fetchGroups();

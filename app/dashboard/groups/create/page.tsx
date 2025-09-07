@@ -1,11 +1,12 @@
 "use client";
 import { useState } from "react";
 import { useOrganization } from "@clerk/nextjs";
-import { useGroup } from "@/hooks/useGroup";
-import { usePermissions } from "@/hooks/usePermissions";
-import { useRouter } from "next/navigation";
+
 import { CreateGroupForm, OrganizationSidePanel } from "../components";
 import { InviteUsersToGroup } from "../components";
+
+import { usePermissions } from "@/hooks/usePermissions";
+import { useGroup } from "@/hooks/useGroup";
 
 export default function CreateGroupPage() {
 	const [name, setName] = useState("");
@@ -17,7 +18,6 @@ export default function CreateGroupPage() {
 	const { organization } = useOrganization();
 	const { createGroup, createLoading, createError, createSuccess, groups, group } = useGroup();
 	const { isAdmin } = usePermissions();
-	const router = useRouter();
 
 	const orgName = organization?.name || "";
 	const orgId = organization?.id || "";
@@ -38,32 +38,32 @@ export default function CreateGroupPage() {
 	return (
 		<div className="py-8 px-4 max-w-4xl mx-auto flex flex-col md:flex-row gap-10 my-10">
 			<div className="flex-2">
-				{showInvite ? (
+				{showInvite && group ? (
 					<InviteUsersToGroup group={group} />
 				) : (
 					<CreateGroupForm
-						name={name}
-						setName={setName}
-						desc={desc}
-						setDesc={setDesc}
-						isPublic={isPublic}
-						setIsPublic={setIsPublic}
 						activity={activity}
-						setActivity={setActivity}
-						orgId={orgId}
-						orgName={orgName}
-						isAdmin={isAdmin}
+						createError={createError}
 						createGroup={createGroup}
 						createLoading={createLoading}
-						createError={createError}
 						createSuccess={createSuccess}
+						desc={desc}
 						groups={groups}
 						handleSubmit={handleSubmit}
+						isAdmin={isAdmin}
+						isPublic={isPublic}
+						name={name}
+						orgId={orgId}
+						orgName={orgName}
+						setActivity={setActivity}
+						setDesc={setDesc}
+						setIsPublic={setIsPublic}
+						setName={setName}
 					/>
 				)}
 			</div>
 			<div className="w-full flex-1">
-				<OrganizationSidePanel isAdmin={isAdmin} groups={groups} />
+				<OrganizationSidePanel />
 			</div>
 		</div>
 	);
