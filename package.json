@@ -24,6 +24,7 @@
     "@heroui/switch": "2.2.23",
     "@heroui/system": "2.4.21",
     "@heroui/theme": "2.4.21",
+    "@newrelic/browser-agent": "^1.296.0",
     "@react-aria/ssr": "3.9.10",
     "@react-aria/visually-hidden": "3.8.27",
     "@supabase/supabase-js": "^2.57.0",
