@@ -1,3 +1,4 @@
+"use client";
 import { Link } from "@heroui/link";
 import { button as buttonStyles } from "@heroui/theme";
 import { Card } from "@heroui/react";

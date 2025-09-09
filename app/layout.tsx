@@ -38,18 +38,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 					"min-h-screen text-foreground bg-background font-sans antialiased",
 					fontSans.variable,
 				)}>
-				<Suspense fallback={<div>Loading...</div>}>
-					<Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
-						<div className="relative flex flex-col">
-							<Navbar />
-							<main className="container mx-auto max-w-7xl pt-8 pb-16 px-4 md:px-8 flex-grow min-h-screen">
-								{children}
-							</main>
-							<MobileTabs />
-							<Footer />
-						</div>
-					</Providers>
-				</Suspense>
+				<Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
+					<div className="relative flex flex-col">
+						<Navbar />
+						<main className="container mx-auto max-w-7xl pt-8 pb-16 px-4 md:px-8 flex-grow min-h-screen">
+							{children}
+						</main>
+						<MobileTabs />
+						<Footer />
+					</div>
+				</Providers>
 			</body>
 		</html>
 	);

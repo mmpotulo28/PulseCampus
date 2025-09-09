@@ -1,3 +1,4 @@
+"use client";
 import { PricingTable } from "@clerk/nextjs";
 
 import { title } from "./primitives";
