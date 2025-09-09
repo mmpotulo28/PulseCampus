@@ -21,6 +21,10 @@ export function useGroup() {
 	const [deleteError, setDeleteError] = useState<string | null>(null);
 	const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null);
 
+	const [inviteLoading, setInviteLoading] = useState(false);
+	const [inviteError, setInviteError] = useState<string | null>(null);
+	const [inviteSuccess, setInviteSuccess] = useState<string | null>(null);
+
 	const fetchGroups = useCallback(async (orgId: string) => {
 		setGroupsLoading(true);
 		setGroupsError(null);
@@ -94,6 +98,25 @@ export function useGroup() {
 		setDeleteLoading(false);
 	}, []);
 
+	const inviteUsersToGroup = useCallback(async (groupId: string, userIds: string[]) => {
+		setInviteLoading(true);
+		setInviteError(null);
+		setInviteSuccess(null);
+
+		try {
+			const { data } = await axios.post(`/api/groups/group/invite`, {
+				group_id: groupId,
+				user_ids: userIds,
+			});
+
+			setInviteSuccess(data.message || "Users invited successfully.");
+		} catch (err: any) {
+			setInviteError(err.response?.data?.error || "Failed to invite users.");
+		}
+
+		setInviteLoading(false);
+	}, []);
+
 	return {
 		groups,
 		groupsLoading,
@@ -113,5 +136,10 @@ export function useGroup() {
 		deleteLoading,
 		deleteError,
 		deleteSuccess,
+		// invite users to group
+		inviteUsersToGroup,
+		inviteLoading,
+		inviteError,
+		inviteSuccess,
 	};
 }
