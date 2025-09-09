@@ -33,7 +33,7 @@ export default function DeleteThreadPage() {
 
 	if (threadLoading || !thread)
 		return (
-			<div className="py-8 px-4 flex justify-center items-center min-h-[40vh]">
+			<div className="flex justify-center items-center min-h-[40vh]">
 				<Spinner color="primary" size="lg" />
 			</div>
 		);

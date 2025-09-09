@@ -8,6 +8,7 @@ import {
 	LockClosedIcon,
 	UserIcon,
 } from "@heroicons/react/24/solid";
+import Link from "next/link";
 
 export default function GroupSidePanel({ group }: { group: IGroup }) {
 	return (
@@ -95,9 +96,9 @@ export default function GroupSidePanel({ group }: { group: IGroup }) {
 				</span>
 				<span>
 					For advanced branding or support,{" "}
-					<a className="underline text-primary" href="/contact">
+					<Link className="underline text-primary" href="/contact">
 						contact us
-					</a>
+					</Link>
 					.
 				</span>
 			</div>

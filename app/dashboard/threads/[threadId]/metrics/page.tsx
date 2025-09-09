@@ -40,7 +40,7 @@ export default function ThreadMetricsPage() {
 	if (error || !thread) return <ThreadMetricsHeader error={error || "Thread not found."} />;
 
 	return (
-		<div className="py-8 px-2 md:px-4 max-w-7xl mx-auto">
+		<section className="px-2 md:px-4 max-w-7xl mx-auto">
 			<ThreadMetricsHeader thread={thread} />
 			<ThreadMetricsGrid metrics={metrics} />
 			<ThreadConsensusCard consensus={consensus} />
@@ -63,6 +63,6 @@ export default function ThreadMetricsPage() {
 					)}
 				</>
 			)}
-		</div>
+		</section>
 	);
 }

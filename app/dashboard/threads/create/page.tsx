@@ -23,6 +23,7 @@ import { useThreads } from "@/hooks/useThreads";
 import { useGroup } from "@/hooks/useGroup";
 import { useNominations } from "@/hooks/useNominations";
 import { INomination } from "@/types";
+import { usePermissions } from "@/hooks/usePermissions";
 
 export default function CreateThreadPage() {
 	const [title, setTitle] = useState("");
@@ -36,8 +37,9 @@ export default function CreateThreadPage() {
 	const [deadlineTime, setDeadlineTime] = useState<Time | null>(null);
 	const { organization } = useOrganization();
 	const { groups } = useGroup();
-	const { createThread, createLoading, createError, createSuccess, isAdmin, thread } =
+	const { createThread, createLoading, createError, createSuccess, thread } =
 		useThreads(selectedGroupId);
+	const { isAdmin, isExco } = usePermissions();
 	const { addNominationError, addNominationSuccess, addNominationLoading } = useNominations(
 		thread?.id || "",
 	);
@@ -87,7 +89,7 @@ export default function CreateThreadPage() {
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (!isAdmin || !selectedGroupId) return;
+		if ((!isAdmin && !isExco) || !selectedGroupId) return;
 		if (title.length < 5 || desc.length < 10) return;
 		if (!deadlineDate || !deadlineTime) return;
 
@@ -104,7 +106,7 @@ export default function CreateThreadPage() {
 			await createThread(title, desc, "yesno", deadline);
 		} else {
 			if (pendingNominations.length < 1) return;
-			await createThread(title, desc, "mcq", deadline, pendingNominations);
+			await createThread(title, desc, "mcq", deadline);
 		}
 	};
 
@@ -125,7 +127,7 @@ export default function CreateThreadPage() {
 	}, [createSuccess, createLoading, createError]);
 
 	return (
-		<div className="py-8 px-4 max-w-5xl mx-auto flex flex-col md:flex-row gap-10 my-10">
+		<div className="max-w-5xl mx-auto flex flex-col md:flex-row gap-10 my-10">
 			<div className="py-0 px-4 max-w-xl mx-auto flex-2">
 				<h2 className="text-xl font-bold mb-4">Create a New Proposal</h2>
 				<div className="mb-2 text-sm text-default-500">
@@ -134,11 +136,14 @@ export default function CreateThreadPage() {
 				</div>
 				<div className="mb-2 text-sm text-default-500">
 					Your Role:{" "}
-					<span className={isAdmin ? "text-success" : "text-danger"}>
-						{isAdmin ? "Admin" : "Not Admin"}
+					<span className={isAdmin || isExco ? "text-success" : "text-danger"}>
+						{isAdmin && "Admin"}
+						{isAdmin && isExco && " & "}
+						{isExco && "Exco"}
+						{!isAdmin && !isExco && "Member"}
 					</span>
 				</div>
-				{!isAdmin && (
+				{!isAdmin && !isExco && (
 					<div className="mb-4 text-danger font-semibold">
 						Only organization admins can create proposals.
 					</div>
@@ -146,7 +151,7 @@ export default function CreateThreadPage() {
 				<form className="flex flex-col gap-4" onSubmit={handleSubmit}>
 					<Select
 						required
-						disabled={!isAdmin || createLoading || groups.length === 0}
+						disabled={(!isAdmin && !isExco) || createLoading || groups.length === 0}
 						label="Select Group"
 						placeholder="Choose a group"
 						selectedKeys={selectedGroupId ? [selectedGroupId] : []}
@@ -161,7 +166,7 @@ export default function CreateThreadPage() {
 					<Input
 						required
 						description="Proposal title (min 5 chars)."
-						disabled={!isAdmin || !selectedGroupId || createLoading}
+						disabled={(!isAdmin && !isExco) || !selectedGroupId || createLoading}
 						errorMessage={
 							title.length > 0 && title.length < 5 ? "Title too short." : undefined
 						}
@@ -174,7 +179,7 @@ export default function CreateThreadPage() {
 					<Input
 						required
 						description="Describe your proposal (min 10 chars)."
-						disabled={!isAdmin || !selectedGroupId || createLoading}
+						disabled={(!isAdmin && !isExco) || !selectedGroupId || createLoading}
 						errorMessage={
 							desc.length > 0 && desc.length < 10
 								? "Description too short."
@@ -220,7 +225,9 @@ export default function CreateThreadPage() {
 							<div className="flex gap-2">
 								<Autocomplete
 									className="max-w-xs"
-									disabled={createLoading || !isAdmin || !selectedGroupId}
+									disabled={
+										createLoading || (!isAdmin && !isExco) || !selectedGroupId
+									}
 									items={members.map((m) => ({
 										label: m.publicUserData?.firstName || "Unknown",
 										key: m.publicUserData?.identifier || m.id,
@@ -313,7 +320,7 @@ export default function CreateThreadPage() {
 							createLoading ||
 							!title ||
 							!desc ||
-							!isAdmin ||
+							(!isAdmin && !isExco) ||
 							!selectedGroupId ||
 							title.length < 5 ||
 							desc.length < 10 ||

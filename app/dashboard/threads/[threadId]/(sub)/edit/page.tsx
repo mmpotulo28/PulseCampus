@@ -8,6 +8,7 @@ import ReactMarkdown from "react-markdown";
 import { useThreads } from "@/hooks/useThreads";
 import supabase from "@/lib/db";
 import { MessageCircleMore, Vote } from "lucide-react";
+import { usePermissions } from "@/hooks/usePermissions";
 
 function ThreadStatsCard({ thread }: { thread: any }) {
 	return (
@@ -68,7 +69,8 @@ function RecentCommentsPreview({ comments }: { comments: any[] }) {
 
 export default function EditThreadPage() {
 	const { threadId } = useParams();
-	const { getThread, thread, threadLoading, threadError, isAdmin } = useThreads();
+	const { getThread, thread, threadLoading, threadError } = useThreads();
+	const { isAdmin, isExco } = usePermissions();
 	const [title, setTitle] = useState("");
 	const [desc, setDesc] = useState("");
 	const [status, setStatus] = useState("open");
@@ -91,7 +93,7 @@ export default function EditThreadPage() {
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (!isAdmin || !threadId) return;
+		if ((!isAdmin && !isExco) || !threadId) return;
 		setSaving(true);
 		setSaveError(null);
 		setSaveSuccess(null);
@@ -118,7 +120,7 @@ export default function EditThreadPage() {
 
 	if (threadError) {
 		return (
-			<div className="py-8 px-4 flex justify-center items-center min-h-[40vh]">
+			<div className="flex justify-center items-center min-h-[40vh]">
 				<p className="text-danger">{threadError}</p>
 			</div>
 		);
@@ -126,7 +128,7 @@ export default function EditThreadPage() {
 
 	if (threadLoading || !thread)
 		return (
-			<div className="py-8 px-4 flex justify-center items-center min-h-[40vh]">
+			<div className="flex justify-center items-center min-h-[40vh]">
 				<Spinner title="Loading thread..." />
 			</div>
 		);
@@ -145,7 +147,7 @@ export default function EditThreadPage() {
 						required
 						color={isTitleValid ? "success" : "danger"}
 						description="5-60 characters"
-						disabled={!isAdmin || saving}
+						disabled={(!isAdmin && !isExco) || saving}
 						label="Title"
 						maxLength={60}
 						placeholder="Enter a clear, descriptive title"
@@ -159,7 +161,7 @@ export default function EditThreadPage() {
 						required
 						color={isDescValid ? "success" : "danger"}
 						description="10-200 characters"
-						disabled={!isAdmin || saving}
+						disabled={(!isAdmin && !isExco) || saving}
 						label="Description (Markdown supported)"
 						maxLength={200}
 						placeholder="Describe the proposal, context, and goals"
@@ -169,7 +171,7 @@ export default function EditThreadPage() {
 					/>
 					<RadioGroup
 						className="gap-6"
-						isDisabled={!isAdmin || saving}
+						isDisabled={(!isAdmin && !isExco) || saving}
 						label="Status"
 						orientation="horizontal"
 						value={status}
@@ -184,7 +186,7 @@ export default function EditThreadPage() {
 								saving ||
 								!title ||
 								!desc ||
-								!isAdmin ||
+								(!isAdmin && !isExco) ||
 								!isTitleValid ||
 								!isDescValid
 							}

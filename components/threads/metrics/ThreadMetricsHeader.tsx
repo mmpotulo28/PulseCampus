@@ -15,14 +15,14 @@ export default function ThreadMetricsHeader({
 }) {
 	if (loading)
 		return (
-			<div className="py-8 px-4 flex justify-center items-center min-h-[40vh]">
+			<div className="flex justify-center items-center min-h-[40vh]">
 				<Spinner color="primary" size="lg" />
 			</div>
 		);
 
 	if (error)
 		return (
-			<div className="py-8 px-4 flex justify-center items-center min-h-[40vh]">
+			<div className="flex justify-center items-center min-h-[40vh]">
 				<Card className="p-8 text-danger">{error}</Card>
 			</div>
 		);

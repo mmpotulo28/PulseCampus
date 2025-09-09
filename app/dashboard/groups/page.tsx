@@ -4,11 +4,11 @@ import type { IGroup } from "@/types";
 import Link from "next/link";
 import { useOrganization, OrganizationSwitcher } from "@clerk/nextjs";
 import { UserGroupIcon, BuildingLibraryIcon } from "@heroicons/react/24/solid";
-import { button as buttonStyles } from "@heroui/theme";
-import { Divider, Spinner } from "@heroui/react";
+import { Button, Divider, Spinner } from "@heroui/react";
 
 import GroupCard from "@/components/GroupCard";
 import { useGroup } from "@/hooks/useGroup";
+import { PlusCircleIcon } from "lucide-react";
 
 export default function GroupsPage() {
 	const { organization } = useOrganization();
@@ -18,7 +18,7 @@ export default function GroupsPage() {
 	if (groupsError) return <div>Error loading groups</div>;
 
 	return (
-		<div className="py-8 px-4 max-w-7xl mx-auto">
+		<div className="max-w-7xl mx-auto">
 			<div className="flex flex-row flex-wrap items-center mb-4 justify-between gap-4">
 				<h2 className="text-2xl font-bold flex items-center gap-2 mb-4">
 					<BuildingLibraryIcon className="h-8 w-8 text-primary" />
@@ -40,15 +40,13 @@ export default function GroupsPage() {
 						))}
 					</div>
 					<div className="flex justify-end">
-						<Link
-							className={buttonStyles({
-								color: "primary",
-								radius: "full",
-								variant: "shadow",
-							})}
+						<Button
+							as={Link}
+							color="primary"
+							endContent={<PlusCircleIcon />}
 							href="/dashboard/groups/create">
 							Create New Group
-						</Link>
+						</Button>
 					</div>
 				</>
 			) : (

@@ -1,21 +1,13 @@
 "use client";
 import Link from "next/link";
-import { button as buttonStyles } from "@heroui/theme";
 import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/solid";
 import { Spinner, Card, Chip, Button } from "@heroui/react";
 import { useMemo } from "react";
-import {
-	FolderOpenIcon,
-	LockClosedIcon,
-	NumberedListIcon,
-	TrashIcon,
-} from "@heroicons/react/24/outline";
-
+import { FolderOpenIcon, LockClosedIcon, NumberedListIcon } from "@heroicons/react/24/outline";
 import { OrganizationSidePanel } from "../groups/components";
-
-import { usePermissions } from "@/hooks/usePermissions";
 import { useThreads } from "@/hooks/useThreads";
-import { Edit, MessageCircleMore, Vote } from "lucide-react";
+import ThreadCard from "@/components/ThreadCard";
+import { PlusCircleIcon } from "lucide-react";
 
 // Thread Stats Header
 function ThreadsStatsHeader({ threads }: { threads: any[] }) {
@@ -65,63 +57,6 @@ function ThreadsStatsHeader({ threads }: { threads: any[] }) {
 	);
 }
 
-// Thread List Item
-function ThreadListItem({ t, isAdmin }: { t: any; isAdmin: boolean }) {
-	return (
-		<li className="flex items-center justify-between p-4 rounded-lg bg-white dark:bg-zinc-900 mb-2 shadow">
-			<div className="flex flex-col gap-1">
-				<div className="flex items-center gap-2">
-					<Link
-						className="font-semibold text-secondary hover:underline"
-						href={`/dashboard/threads/${t.id}`}>
-						{t.title}
-					</Link>
-					<Chip
-						color={t.status === "open" ? "success" : "danger"}
-						size="sm"
-						variant="flat">
-						{t.status}
-					</Chip>
-				</div>
-				<div className="flex items-center gap-3 text-xs text-default-400 mt-1">
-					<span>By: {t.created_by || "Unknown"}</span>
-					<span>
-						Created: {t.created_at ? new Date(t.created_at).toLocaleDateString() : "-"}
-					</span>
-					<span className="flex items-center gap-1">
-						<Vote className="h-3 w-3" /> {t.votesCount || 0}
-					</span>
-					<span className="flex items-center gap-1">
-						<MessageCircleMore className="h-3 w-3" /> {t.commentsCount || 0}
-					</span>
-				</div>
-			</div>
-			{isAdmin && (
-				<div className="flex gap-2">
-					<Button
-						isIconOnly
-						as={Link}
-						color="primary"
-						endContent={<Edit className="h-4 w-4" />}
-						href={`/dashboard/threads/${t.id}/edit`}
-						size="sm"
-						variant="bordered"
-					/>
-					<Button
-						isIconOnly
-						as={Link}
-						color="danger"
-						endContent={<TrashIcon className="h-4 w-4" />}
-						href={`/dashboard/threads/${t.id}/delete`}
-						size="sm"
-						variant="bordered"
-					/>
-				</div>
-			)}
-		</li>
-	);
-}
-
 // Bottom Section: Tips & Help
 function ThreadsBottomSection() {
 	return (
@@ -134,24 +69,22 @@ function ThreadsBottomSection() {
 				<li>Check metrics for group engagement and voting activity.</li>
 			</ul>
 			<div className="flex gap-4 mt-2">
-				<Link
-					className={buttonStyles({
-						color: "primary",
-						radius: "full",
-						variant: "bordered",
-					})}
+				<Button
+					variant="bordered"
+					color="success"
+					size="sm"
+					as={Link}
 					href="/support/help-centre">
 					Help Centre
-				</Link>
-				<Link
-					className={buttonStyles({
-						color: "success",
-						radius: "full",
-						variant: "bordered",
-					})}
+				</Button>
+				<Button
+					variant="bordered"
+					color="secondary"
+					size="sm"
+					as={Link}
 					href="/dashboard/metrics">
 					View Metrics
-				</Link>
+				</Button>
 			</div>
 		</Card>
 	);
@@ -159,7 +92,6 @@ function ThreadsBottomSection() {
 
 export default function ThreadsPage() {
 	const { threads, threadsLoading, threadsError } = useThreads();
-	const { isAdmin } = usePermissions();
 
 	// Example: add votesCount/commentsCount for demo (replace with real data if available)
 	const threadsWithCounts = useMemo(
@@ -173,29 +105,28 @@ export default function ThreadsPage() {
 	);
 
 	return (
-		<div className="py-8 px-4 max-w-5xl mx-auto">
+		<section className="max-w-7xl mx-auto">
 			<div className="flex flex-col md:flex-row gap-8">
 				{/* Main Content */}
 				<div className="flex-1">
 					<ThreadsStatsHeader threads={threadsWithCounts} />
-					<div className="flex flex-col w-full mb-4">
-						{threadsLoading && <Spinner className="m-auto" />}
+					<div className="flex flex-col w-full">
+						{threadsLoading && <Spinner className="m-auto my-8" />}
 						{threadsError && <div>Error loading threads</div>}
 					</div>
-					<ul className="mb-6">
+
+					<div className="mb-6 flex flex-col gap-4">
 						{threadsWithCounts.map((t) => (
-							<ThreadListItem key={t.id} isAdmin={isAdmin} t={t} />
+							<ThreadCard key={t.id} thread={t} href={`/dashboard/threads/${t.id}`} />
 						))}
-					</ul>
-					<Link
-						className={buttonStyles({
-							color: "secondary",
-							radius: "full",
-							variant: "shadow",
-						})}
+					</div>
+
+					<Button
+						as={Link}
+						startContent={<PlusCircleIcon />}
 						href="/dashboard/threads/create">
 						New Proposal
-					</Link>
+					</Button>
 					<ThreadsBottomSection />
 				</div>
 				{/* Organization Side Panel */}
@@ -203,6 +134,6 @@ export default function ThreadsPage() {
 					<OrganizationSidePanel />
 				</div>
 			</div>
-		</div>
+		</section>
 	);
 }

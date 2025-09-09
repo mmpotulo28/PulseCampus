@@ -40,7 +40,7 @@ export default function CreateGroupPage() {
 	}
 
 	return (
-		<div className="py-8 px-4 max-w-4xl mx-auto flex flex-col md:flex-row gap-10 my-10">
+		<div className="max-w-4xl mx-auto flex flex-col md:flex-row gap-10 my-10">
 			<div className="flex-2">
 				{showInvite && group ? (
 					<InviteUsersToGroup group={group} />
