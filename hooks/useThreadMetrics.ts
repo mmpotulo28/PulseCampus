@@ -1,6 +1,6 @@
-import type { IThread, IVote, IComment, IConsensus, INomination } from "@/types";
 import { useState, useEffect, useMemo } from "react";
-import supabase from "@/lib/db";
+import axios from "axios";
+import type { IThread, IVote, IComment, IConsensus, INomination } from "@/types";
 
 export interface ThreadMetrics {
 	thread: IThread | null;
@@ -29,50 +29,29 @@ export function useThreadMetrics(threadId: string) {
 	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
-		let cancelled = false;
-
-		async function fetchAll() {
+		async function fetchMetrics() {
 			setLoading(true);
 			setError(null);
-			try {
-				const [
-					{ data: threadData, error: threadError },
-					{ data: votesData, error: votesError },
-					{ data: commentsData, error: commentsError },
-					{ data: nominationsData, error: nominationsError },
-				] = await Promise.all([
-					supabase.from("threads").select("*").eq("id", threadId).single(),
-					supabase.from("votes").select("*").eq("thread_id", threadId),
-					supabase.from("comments").select("*").eq("thread_id", threadId),
-					supabase.from("nominations").select("*").eq("thread_id", threadId),
-				]);
 
-				if (cancelled) return;
-				if (threadError || votesError || commentsError || nominationsError) {
-					setError(
-						threadError?.message ||
-							votesError?.message ||
-							commentsError?.message ||
-							nominationsError?.message ||
-							"Error loading thread metrics",
-					);
-				}
-				setThread(threadData || null);
-				setVotes(votesData || []);
-				setComments(commentsData || []);
-				setNominations(nominationsData || []);
+			try {
+				const { data } = await axios.get(`/api/threads/metrics`, {
+					params: { thread_id: threadId },
+				});
+
+				setThread(data.thread || null);
+				setVotes(data.votes || []);
+				setComments(data.comments || []);
+				setNominations(data.nominations || []);
 			} catch (err: any) {
-				console.error("Error fetching thread metrics:", err);
-				if (!cancelled) setError("Error loading thread metrics");
+				setError(err.response?.data?.error || "Failed to fetch thread metrics");
 			} finally {
-				if (!cancelled) setLoading(false);
+				setLoading(false);
 			}
 		}
-		if (threadId) fetchAll();
 
-		return () => {
-			cancelled = true;
-		};
+		if (threadId) {
+			fetchMetrics();
+		}
 	}, [threadId]);
 
 	const totalVotes = votes.length;
@@ -89,7 +68,6 @@ export function useThreadMetrics(threadId: string) {
 		return Math.round(((totalVotes + totalComments) / members) * 100);
 	}, [totalVotes, totalComments, thread]);
 
-	// MCQ support: count votes per option
 	const nomineeCounts = useMemo(() => {
 		const counts: Record<string, number> = {};
 
@@ -108,7 +86,7 @@ export function useThreadMetrics(threadId: string) {
 		});
 
 		return counts;
-	}, [votes]);
+	}, [votes, nominations]);
 
 	const topNominees = useMemo(() => {
 		return Object.entries(nomineeCounts)
@@ -118,8 +96,9 @@ export function useThreadMetrics(threadId: string) {
 	}, [nomineeCounts]);
 
 	const winningNominee = useMemo(() => {
-		if (!thread || thread.status?.toLowerCase() !== "closed" || !topNominees.length)
+		if (!thread || thread.status?.toLowerCase() !== "closed" || !topNominees.length) {
 			return null;
+		}
 
 		return topNominees[0].option;
 	}, [thread, topNominees]);

@@ -2,5 +2,7 @@
   "typescript.tsdk": "node_modules/typescript/lib",
   "cSpell.words": [
     "nodenext"
-  ]
+  ],
+  "codescene.enableReviewCodeLenses": false,
+  "codescene.enableTelemetry": false
 }

@@ -1,253 +1,151 @@
-import type {
-  IConsensus,
-  IUseVotingOptions,
-  IVote,
-  IVoteWithCounts,
-  IVoteOption,
-} from "@/types";
-
+import type { IConsensus, IUseVotingOptions, IVoteWithCounts, IVoteOption } from "@/types";
 import { useState, useEffect, useCallback } from "react";
-import { REALTIME_LISTEN_TYPES } from "@supabase/supabase-js";
-import { useUser } from "@clerk/nextjs";
-
-import supabase from "@/lib/db";
+import axios from "axios";
 
 export function useVoting({
-  thread_id,
-  options = [
-    { id: "yes", label: "Yes" },
-    { id: "no", label: "No" },
-  ],
-  anonymous = false,
-  weighted = false,
+	thread_id,
+	options = [
+		{ id: "yes", label: "Yes" },
+		{ id: "no", label: "No" },
+	],
+	weighted = false,
 }: IUseVotingOptions) {
-  const { user } = useUser();
-  const [voteOptions, setVoteOptions] = useState<IVoteOption[]>(options);
-  const [votes, setVotes] = useState<IVoteWithCounts>({
-    votes: [],
-    voteCounts: {},
-  });
-  const [userVote, setUserVote] = useState<string | string[] | null>(null);
+	const [voteOptions, setVoteOptions] = useState<IVoteOption[]>(options);
+	const [votes, setVotes] = useState<IVoteWithCounts>({
+		votes: [],
+		voteCounts: {},
+	});
+	const [userVote, setUserVote] = useState<string | string[] | null>(null);
 
-  const [votingFetchLoading, setVotingFetchLoading] = useState(false);
-  const [votingFetchMessage, setVotingFetchMessage] = useState<string | null>(
-    null,
-  );
-  const [votingFetchError, setVotingFetchError] = useState<string | null>(null);
+	const [votingFetchLoading, setVotingFetchLoading] = useState(false);
+	const [votingFetchMessage, setVotingFetchMessage] = useState<string | null>(null);
+	const [votingFetchError, setVotingFetchError] = useState<string | null>(null);
 
-  const [votingCreateLoading, setVotingCreateLoading] = useState(false);
-  const [votingCreateMessage, setVotingCreateMessage] = useState<string | null>(
-    null,
-  );
-  const [votingCreateError, setVotingCreateError] = useState<string | null>(
-    null,
-  );
+	const [votingCreateLoading, setVotingCreateLoading] = useState(false);
+	const [votingCreateMessage, setVotingCreateMessage] = useState<string | null>(null);
+	const [votingCreateError, setVotingCreateError] = useState<string | null>(null);
 
-  const [consensus, setConsensus] = useState<IConsensus>({
-    agreement: 0,
-    engagement: 0,
-    reached: false,
-    yesVotes: 0,
-    noVotes: 0,
-    totalVotes: 0,
-  });
+	const [consensus, setConsensus] = useState<IConsensus>({
+		agreement: 0,
+		engagement: 0,
+		reached: false,
+		yesVotes: 0,
+		noVotes: 0,
+		totalVotes: 0,
+	});
 
-  // clear all messages and errors after 3 seconds
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setVotingFetchMessage(null);
-      setVotingFetchError(null);
-      setVotingCreateMessage(null);
-      setVotingCreateError(null);
-    }, 3000);
+	// clear all messages and errors after 3 seconds
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setVotingFetchMessage(null);
+			setVotingFetchError(null);
+			setVotingCreateMessage(null);
+			setVotingCreateError(null);
+		}, 3000);
 
-    return () => clearTimeout(timer);
-  }, []);
+		return () => clearTimeout(timer);
+	}, []);
 
-  // Stable fetchVotes function
-  const fetchVotes = useCallback(async () => {
-    setVotingFetchLoading(true);
-    setVotingFetchMessage(null);
-    setVotingFetchError(null);
+	const fetchVotes = useCallback(async () => {
+		setVotingFetchLoading(true);
+		setVotingFetchMessage(null);
+		setVotingFetchError(null);
 
-    if (!thread_id) {
-      setVotes({ votes: [], voteCounts: {} });
-      setVotingFetchLoading(false);
-      setVotingFetchError("No thread_id provided");
+		if (!thread_id) {
+			setVotes({ votes: [], voteCounts: {} });
+			setVotingFetchLoading(false);
+			setVotingFetchError("No thread_id provided");
 
-      return;
-    }
+			return;
+		}
 
-    try {
-      const { data, error } = (await supabase
-        .from("votes")
-        .select("*")
-        .eq("thread_id", thread_id)) as { data: IVote[] | null; error: any };
+		try {
+			const { data } = await axios.get(`/api/votes`, {
+				params: { thread_id },
+			});
 
-      if (error) {
-        setVotingFetchError(error.message || "errored");
-        setVotingFetchLoading(false);
+			const voteCounts: Record<string, number> = {};
+			data.votes.forEach((v: any) => {
+				const value = weighted ? v.weight || 1 : 1;
 
-        return;
-      }
+				if (Array.isArray(v.vote)) {
+					v.vote.forEach((opt: string) => {
+						voteCounts[opt] = (voteCounts[opt] || 0) + value;
+					});
+				} else {
+					voteCounts[v.vote] = (voteCounts[v.vote] || 0) + value;
+				}
+			});
 
-      if (data) {
-        // Process votes
-        const voteCounts: Record<string, number> = {};
+			setVotes({ votes: data.votes, voteCounts });
+		} catch (err: any) {
+			setVotingFetchError(err.response?.data?.error || "Failed to fetch votes");
+		}
+		setVotingFetchLoading(false);
+	}, [thread_id, weighted]);
 
-        data.forEach((v: IVote) => {
-          const value = weighted ? v.weight || 1 : 1;
+	useEffect(() => {
+		if (thread_id) {
+			fetchVotes();
+		}
+	}, [thread_id, fetchVotes]);
 
-          if (Array.isArray(v.vote)) {
-            v.vote.forEach((opt: string) => {
-              voteCounts[opt] = (voteCounts[opt] || 0) + value;
-            });
-          } else {
-            voteCounts[v.vote] = (voteCounts[v.vote] || 0) + value;
-          }
-        });
+	const submitVote = useCallback(
+		async (vote: string | string[]) => {
+			setVotingCreateLoading(true);
+			setVotingCreateMessage(null);
+			setVotingCreateError(null);
 
-        setVotes({ votes: data, voteCounts });
-        // setVotingFetchMessage("Votes fetched successfully.");
-      }
-    } catch (err: any) {
-      setVotingFetchError(err.message || "errored");
-    }
-    setVotingFetchLoading(false);
-  }, [thread_id, weighted]);
+			try {
+				if (!thread_id) throw new Error("Thread ID is required.");
 
-  useEffect(() => {
-    if (thread_id && user) {
-      fetchVotes();
-    }
-  }, [thread_id, user, fetchVotes]);
+				await axios.post("/api/votes", {
+					thread_id,
+					vote,
+					weight: weighted ? 1 : undefined,
+				});
 
-  // Fetch votes in real-time
-  useEffect(() => {
-    fetchVotes();
+				setUserVote(vote);
+				setVotingCreateMessage("Vote submitted successfully.");
+			} catch (err: any) {
+				setVotingCreateError(err.response?.data?.error || "Failed to submit vote");
+			}
+			setVotingCreateLoading(false);
+		},
+		[thread_id, weighted],
+	);
 
-    let channel: any;
+	useEffect(() => {
+		const totalVotes = Object.values(votes?.voteCounts || {}).reduce((a, b) => a + b, 0);
+		const yesVotes = votes?.voteCounts["yes"] || 0;
+		const noVotes = votes?.voteCounts["no"] || 0;
+		const maxVotes = Math.max(...Object.values(votes?.voteCounts || {}), 0);
+		const agreement = totalVotes ? (maxVotes / totalVotes) * 100 : 0;
+		const engagement = thread_id ? (totalVotes / (voteOptions.length || 1)) * 100 : 0;
+		const reached = agreement >= 70 && engagement >= 50;
 
-    try {
-      channel = supabase
-        .channel("public:votes", {
-          config: {
-            presence: {
-              enabled: true,
-              key: user?.id || "anonymous",
-            },
-          },
-        })
-        .on(
-          REALTIME_LISTEN_TYPES.POSTGRES_CHANGES,
-          {
-            event: "*",
-            schema: "public",
-            table: "votes",
-          },
-          () => {
-            fetchVotes();
-          },
-        )
-        .subscribe();
-    } catch (error) {
-      // ignore
-      console.error("Supabase subscription error:", error);
-    }
+		setConsensus({
+			agreement,
+			engagement,
+			reached,
+			yesVotes,
+			noVotes,
+			totalVotes,
+		});
+	}, [votes?.voteCounts, thread_id, votes.votes, voteOptions.length]);
 
-    return () => {
-      if (channel) {
-        channel.unsubscribe();
-      }
-    };
-  }, []);
-
-  // Submit vote
-  const submitVote = useCallback(
-    async (vote: string | string[]) => {
-      setVotingCreateLoading(true);
-      setVotingCreateMessage(null);
-      setVotingCreateError(null);
-
-      try {
-        if (!thread_id) throw new Error("Thread ID is required.");
-        if (!user && !anonymous)
-          throw new Error("User must be logged in to vote.");
-
-        const payload: IVote = {
-          thread_id,
-          user_id: anonymous ? null : user?.id || null,
-          vote,
-          weight: weighted ? getUserWeight(user) : 1,
-        };
-
-        const { error } = await supabase.from("votes").upsert([payload]);
-
-        if (error) {
-          setVotingCreateError(error.message || "errored");
-        } else {
-          setUserVote(vote);
-          setVotingCreateMessage("Vote submitted successfully.");
-        }
-      } catch (err: any) {
-        setVotingCreateError(err.message || "errored");
-      }
-      setVotingCreateLoading(false);
-    },
-    [thread_id, user, anonymous, weighted],
-  );
-
-  // Consensus detection for MCQ: agreement = max option %; engagement = total votes / options
-  useEffect(() => {
-    const totalVotes = Object.values(votes?.voteCounts || {}).reduce(
-      (a, b) => a + b,
-      0,
-    );
-    const yesVotes = votes?.voteCounts["yes"] || 0;
-    const noVotes = votes?.voteCounts["no"] || 0;
-    const maxVotes = Math.max(...Object.values(votes?.voteCounts || {}), 0);
-    const agreement = totalVotes ? (maxVotes / totalVotes) * 100 : 0;
-    const engagement = thread_id
-      ? (totalVotes / (voteOptions.length || 1)) * 100
-      : 0;
-    const reached = agreement >= 70 && engagement >= 50;
-
-    setConsensus({
-      agreement,
-      engagement,
-      reached,
-      yesVotes,
-      noVotes,
-      totalVotes,
-    });
-  }, [votes?.voteCounts, thread_id, votes.votes, voteOptions.length]);
-
-  return {
-    votes,
-    userVote,
-    submitVote,
-    consensus,
-    voteOptions,
-    setVoteOptions,
-    votingFetchLoading,
-    votingFetchMessage,
-    votingFetchError,
-    votingCreateLoading,
-    votingCreateMessage,
-    votingCreateError,
-  };
-}
-
-// Example weighted voting logic (role-based)
-function getUserWeight(user: any): number {
-  switch (user?.publicMetadata?.role) {
-    case "President":
-    case "Chair":
-      return 2;
-    case "Treasurer":
-    case "Secretary":
-      return 1.5;
-    default:
-      return 1;
-  }
+	return {
+		votes,
+		userVote,
+		submitVote,
+		consensus,
+		voteOptions,
+		setVoteOptions,
+		votingFetchLoading,
+		votingFetchMessage,
+		votingFetchError,
+		votingCreateLoading,
+		votingCreateMessage,
+		votingCreateError,
+	};
 }

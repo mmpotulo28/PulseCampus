@@ -1,12 +1,6 @@
-import type { INomination } from "@/types";
-
 import { useState, useEffect, useCallback } from "react";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-	process.env.NEXT_PUBLIC_SUPABASE_URL!,
-	process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-);
+import axios from "axios";
+import type { INomination } from "@/types";
 
 export function useNominations(threadId: string) {
 	const [nominations, setNominations] = useState<INomination[]>([]);
@@ -21,69 +15,56 @@ export function useNominations(threadId: string) {
 	const fetchNominations = useCallback(async () => {
 		setLoading(true);
 		setError(null);
-		if (!threadId) {
-			setNominations([]);
-			setLoading(false);
 
-			return;
+		try {
+			const { data } = await axios.get(`/api/nominations`, {
+				params: { thread_id: threadId },
+			});
+			setNominations(data.nominations || []);
+		} catch (err: any) {
+			setError(err.response?.data?.error || "Failed to fetch nominations");
 		}
-		const { data, error } = await supabase
-			.from("nominations")
-			.select("*")
-			.eq("thread_id", threadId)
-			.order("created_at", { ascending: true });
-
-		if (error) setError(error.message);
-		setNominations(data || []);
 		setLoading(false);
 	}, [threadId]);
 
 	useEffect(() => {
-		if (threadId) fetchNominations();
+		if (threadId) {
+			fetchNominations();
+		}
 	}, [threadId, fetchNominations]);
 
 	const addNomination = useCallback(
-		async ({ nomination, threadId }: { nomination: INomination; threadId: string }) => {
-			const targetThreadId = threadId || threadId;
-
-			if (!targetThreadId || !nomination) return;
-
+		async (nomination: INomination) => {
 			setAddNominationLoading(true);
 			setAddNominationError(null);
 			setAddNominationSuccess(null);
 
 			try {
-				const { error, data } = await supabase
-					.from("nominations")
-					.insert([
-						{
-							thread_id: targetThreadId,
-							name: nomination.name,
-							user_id: nomination.user_id,
-							email: nomination.email,
-							label: nomination.label,
-						},
-					])
-					.select();
+				const { data } = await axios.post("/api/nominations", {
+					...nomination,
+					thread_id: threadId,
+				});
 
-				if (error) setAddNominationError(error.message);
-				if (data) setNominations((prev) => [...prev, ...data]);
-				setAddNominationSuccess("Nomination added");
-			} catch (error) {
-				console.error("Error adding nomination:", error);
-				setAddNominationError("Failed to add nomination");
-			} finally {
-				setAddNominationLoading(false);
+				setNominations((prev) => [...prev, data.nomination]);
+				setAddNominationSuccess("Nomination added successfully.");
+			} catch (err: any) {
+				setAddNominationError(err.response?.data?.error || "Failed to add nomination");
 			}
+			setAddNominationLoading(false);
 		},
 		[threadId],
 	);
 
 	const removeNomination = useCallback(async (nominationId: string) => {
-		const { error } = await supabase.from("nominations").delete().eq("id", nominationId);
+		try {
+			await axios.delete(`/api/nominations`, {
+				params: { nomination_id: nominationId },
+			});
 
-		if (error) setError(error.message);
-		setNominations((prev) => prev.filter((n) => n.id !== nominationId));
+			setNominations((prev) => prev.filter((n) => n.id !== nominationId));
+		} catch (err: any) {
+			setError(err.response?.data?.error || "Failed to delete nomination");
+		}
 	}, []);
 
 	return {

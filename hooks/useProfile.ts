@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import supabase from "@/lib/db";
 import axios from "axios";
 
 export function useProfile(userId: string) {
@@ -12,30 +11,24 @@ export function useProfile(userId: string) {
 		async function fetchProfile() {
 			setLoading(true);
 			try {
-				// Fetch Clerk user info securely
 				if (!userId) throw new Error("Invalid user ID");
-				const { data } = await axios.get(`/api/clerk/user?userId=${userId}`);
-				const clerkUser = data?.user;
+				const { data: clerkData } = await axios.get(`/api/clerk/user`, {
+					params: { userId },
+				});
+				const clerkUser = clerkData?.user;
 
-				if (!clerkUser) throw new Error(data?.message || "User not found");
+				if (!clerkUser) throw new Error(clerkData?.message || "User not found");
 
-				// Fetch votes/comments/groups from Supabase in parallel
-				const [votesRes, commentsRes, groupsRes] = await Promise.all([
-					supabase.from("votes").select("*").eq("user_id", userId),
-					supabase.from("comments").select("*").eq("user_id", userId),
-					supabase
-						.from("groups")
-						.select("*")
-						.contains("members_list", [
-							{ name: clerkUser?.fullName, role: clerkUser?.publicMetadata?.role },
-						]),
-				]);
+				const { data: votesData } = await axios.get(`/api/votes`, {
+					params: { user_id: userId },
+				});
+				const { data: commentsData } = await axios.get(`/api/comments`, {
+					params: { user_id: userId },
+				});
+				const { data: groupsData } = await axios.get(`/api/groups`, {
+					params: { user_id: userId },
+				});
 
-				const votes = votesRes.data || [];
-				const comments = commentsRes.data || [];
-				const groups = groupsRes.data || [];
-
-				const unsafeMeta = clerkUser?.unsafeMetadata || {};
 				const profileData = {
 					name:
 						`${clerkUser?.firstName || ""} ${clerkUser?.lastName || ""}` ||
@@ -46,10 +39,14 @@ export function useProfile(userId: string) {
 					avatar: clerkUser?.imageUrl || "",
 					isVerified: clerkUser?.publicMetadata?.verified || false,
 					email: clerkUser?.emailAddresses?.[0]?.emailAddress || "",
-					course: unsafeMeta.course || "",
-					yearOfStudy: unsafeMeta.yearOfStudy || "",
-					skills: Array.isArray(unsafeMeta.skills) ? unsafeMeta.skills : [],
-					interests: Array.isArray(unsafeMeta.interests) ? unsafeMeta.interests : [],
+					course: clerkUser?.unsafeMetadata?.course || "",
+					yearOfStudy: clerkUser?.unsafeMetadata?.yearOfStudy || "",
+					skills: Array.isArray(clerkUser?.unsafeMetadata?.skills)
+						? clerkUser?.unsafeMetadata?.skills
+						: [],
+					interests: Array.isArray(clerkUser?.unsafeMetadata?.interests)
+						? clerkUser?.unsafeMetadata?.interests
+						: [],
 					socialLinks: [
 						...(clerkUser?.publicMetadata?.linkedin
 							? [
@@ -79,9 +76,9 @@ export function useProfile(userId: string) {
 								]
 							: []),
 					],
-					totalVotes: votes.length,
-					totalComments: comments.length,
-					totalGroups: groups.length,
+					totalVotes: votesData?.votes?.length || 0,
+					totalComments: commentsData?.comments?.length || 0,
+					totalGroups: groupsData?.groups?.length || 0,
 				};
 
 				if (!cancelled) setProfile(profileData);
