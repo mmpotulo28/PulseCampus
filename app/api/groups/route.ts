@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import supabase from "@/lib/db";
 import { getAuth } from "@clerk/nextjs/server";
+import redis from "@/lib/config/redis";
+
+const CACHE_DURATION = 300; // Cache duration in seconds (5 minutes)
 
 export async function GET(req: NextRequest) {
 	const auth = getAuth(req);
 
 	if (!auth || !auth.userId) {
-		return Response.json(
+		return NextResponse.json(
 			{
 				error: true,
 				message: "Unauthorized: You must be signed in to access this resource.",
@@ -23,14 +26,30 @@ export async function GET(req: NextRequest) {
 		return NextResponse.json({ error: "Organization ID is required" }, { status: 400 });
 	}
 
-	const { data, error } = await supabase.from("groups").select("*").eq("org_id", org_id);
+	const cacheKey = `groups_${org_id}`;
 
-	if (error) {
-		return NextResponse.json({ error: error.message }, { status: 500 });
+	try {
+		// Check Redis cache
+		const cachedResponse = await redis.get(cacheKey);
+		if (cachedResponse) {
+			return NextResponse.json(JSON.parse(cachedResponse));
+		}
+
+		// Fetch data from Supabase
+		const { data, error } = await supabase.from("groups").select("*").eq("org_id", org_id);
+
+		if (error) {
+			return NextResponse.json({ error: error.message }, { status: 500 });
+		}
+
+		// Cache the response in Redis
+		await redis.set(cacheKey, JSON.stringify({ groups: data }), "EX", CACHE_DURATION);
+
+		return NextResponse.json({ groups: data });
+	} catch (err) {
+		console.error("Error fetching groups:", err);
+		return NextResponse.json({ error: "Error fetching groups" }, { status: 500 });
 	}
-
-	console.log("Groups data:", data);
-	return NextResponse.json({ groups: data });
 }
 
 export async function POST(req: NextRequest) {
@@ -71,6 +90,10 @@ export async function POST(req: NextRequest) {
 		return NextResponse.json({ error: error.message }, { status: 500 });
 	}
 
+	// Invalidate cache for groups
+	const cacheKey = `groups_${org_id}`;
+	await redis.del(cacheKey);
+
 	return NextResponse.json({ group: data[0] });
 }
 
@@ -99,6 +122,9 @@ export async function DELETE(req: NextRequest) {
 	if (error) {
 		return NextResponse.json({ error: error.message }, { status: 500 });
 	}
+
+	// Invalidate cache for groups
+	await redis.del(`groups_${group_id}`);
 
 	return NextResponse.json({ message: "Group deleted successfully" });
 }

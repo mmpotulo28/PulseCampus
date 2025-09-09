@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import supabase from "@/lib/db";
 import { getAuth } from "@clerk/nextjs/server";
+import redis from "@/lib/config/redis";
+
+const CACHE_DURATION = 300; // Cache duration in seconds (5 minutes)
 
 export async function GET(req: NextRequest) {
 	const auth = getAuth(req);
 
 	if (!auth || !auth.userId) {
-		return Response.json(
+		return NextResponse.json(
 			{
 				error: true,
 				message: "Unauthorized: You must be signed in to access this resource.",
@@ -19,25 +22,45 @@ export async function GET(req: NextRequest) {
 	const { searchParams } = new URL(req.url);
 	const group_id = searchParams.get("group_id");
 
-	let query = supabase.from("threads").select("*");
-	if (group_id) {
-		query = query.eq("group_id", group_id);
+	const cacheKey = group_id ? `threads_${group_id}` : "threads_all";
+
+	try {
+		// Check Redis cache
+		const cachedResponse = await redis.get(cacheKey);
+
+		if (cachedResponse) {
+			return NextResponse.json(JSON.parse(cachedResponse));
+		}
+
+		// Fetch data from Supabase
+		let query = supabase.from("threads").select("*");
+
+		if (group_id) {
+			query = query.eq("group_id", group_id);
+		}
+
+		const { data, error } = await query;
+
+		if (error) {
+			return NextResponse.json({ error: error.message }, { status: 500 });
+		}
+
+		// Cache the response in Redis
+		await redis.set(cacheKey, JSON.stringify({ threads: data }), "EX", CACHE_DURATION);
+
+		return NextResponse.json({ threads: data });
+	} catch (err) {
+		console.error("Error fetching threads:", err);
+
+		return NextResponse.json({ error: "Error fetching threads" }, { status: 500 });
 	}
-
-	const { data, error } = await query;
-
-	if (error) {
-		return NextResponse.json({ error: error.message }, { status: 500 });
-	}
-
-	return NextResponse.json({ threads: data });
 }
 
 export async function POST(req: NextRequest) {
 	const auth = getAuth(req);
 
 	if (!auth || !auth.userId) {
-		return Response.json(
+		return NextResponse.json(
 			{
 				error: true,
 				message: "Unauthorized: You must be signed in to access this resource.",
@@ -71,6 +94,11 @@ export async function POST(req: NextRequest) {
 		return NextResponse.json({ error: error.message }, { status: 500 });
 	}
 
+	// Invalidate cache for threads
+	const cacheKey = group_id ? `threads_${group_id}` : "threads_all";
+
+	await redis.del(cacheKey);
+
 	return NextResponse.json({ threadId: data[0].id });
 }
 
@@ -99,6 +127,9 @@ export async function DELETE(req: NextRequest) {
 	if (error) {
 		return NextResponse.json({ error: error.message }, { status: 500 });
 	}
+
+	// Invalidate cache for threads
+	await redis.del("threads_all");
 
 	return NextResponse.json({ message: "Thread deleted successfully" });
 }

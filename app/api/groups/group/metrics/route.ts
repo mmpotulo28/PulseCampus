@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import supabase from "@/lib/db";
 import { getAuth } from "@clerk/nextjs/server";
+import redis from "@/lib/config/redis";
+
+const CACHE_DURATION = 300; // Cache duration in seconds (5 minutes)
 
 export async function GET(req: NextRequest) {
 	const auth = getAuth(req);
 
 	if (!auth || !auth.userId) {
-		return Response.json(
+		return NextResponse.json(
 			{
 				error: true,
 				message: "Unauthorized: You must be signed in to access this resource.",
@@ -23,7 +26,17 @@ export async function GET(req: NextRequest) {
 		return NextResponse.json({ error: "Group ID is required" }, { status: 400 });
 	}
 
+	const cacheKey = `group_metrics_${group_id}`;
+
 	try {
+		// Check Redis cache
+		const cachedResponse = await redis.get(cacheKey);
+
+		if (cachedResponse) {
+			return NextResponse.json(JSON.parse(cachedResponse));
+		}
+
+		// Fetch data from Supabase
 		const { data: threads, error: threadsError } = await supabase
 			.from("threads")
 			.select("*")
@@ -50,7 +63,12 @@ export async function GET(req: NextRequest) {
 			);
 		}
 
-		return NextResponse.json({ threads, votes, comments });
+		const responseData = { threads, votes, comments };
+
+		// Cache the response in Redis
+		await redis.set(cacheKey, JSON.stringify(responseData), "EX", CACHE_DURATION);
+
+		return NextResponse.json(responseData);
 	} catch (error) {
 		console.error("Error loading group metrics:", error);
 

@@ -15,6 +15,10 @@ export function useThreads(groupId?: string) {
 	const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null);
 	const [deleting, setDeleting] = useState(false);
 
+	const [thread, setThread] = useState<IThread | null>(null);
+	const [threadLoading, setThreadLoading] = useState(false);
+	const [threadError, setThreadError] = useState<string | null>(null);
+
 	const fetchThreads = useCallback(async () => {
 		setThreadsLoading(true);
 		setThreadsError(null);
@@ -33,6 +37,21 @@ export function useThreads(groupId?: string) {
 	useEffect(() => {
 		fetchThreads();
 	}, [fetchThreads, groupId]);
+
+	const getThread = useCallback(async (threadId: string) => {
+		setThreadLoading(true);
+		setThreadError(null);
+
+		try {
+			const { data } = await axios.get(`/api/threads/thread`, {
+				params: { thread_id: threadId },
+			});
+			setThread(data.thread || null);
+		} catch (err: any) {
+			setThreadError(err.response?.data?.error || "Failed to fetch thread");
+		}
+		setThreadLoading(false);
+	}, []);
 
 	const createThread = async (
 		title: string,
@@ -108,5 +127,9 @@ export function useThreads(groupId?: string) {
 		deleting,
 		deleteError,
 		deleteSuccess,
+		thread,
+		threadLoading,
+		threadError,
+		getThread,
 	};
 }

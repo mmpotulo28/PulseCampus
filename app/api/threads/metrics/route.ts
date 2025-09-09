@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import supabase from "@/lib/db";
 import { getAuth } from "@clerk/nextjs/server";
+import redis from "@/lib/config/redis";
+
+const CACHE_DURATION = 300; // Cache duration in seconds (5 minutes)
 
 export async function GET(req: NextRequest) {
 	const auth = getAuth(req);
 
 	if (!auth || !auth.userId) {
-		return Response.json(
+		return NextResponse.json(
 			{
 				error: true,
 				message: "Unauthorized: You must be signed in to access this resource.",
@@ -23,7 +26,17 @@ export async function GET(req: NextRequest) {
 		return NextResponse.json({ error: "Thread ID is required" }, { status: 400 });
 	}
 
+	const cacheKey = `thread_metrics_${thread_id}`;
+
 	try {
+		// Check Redis cache
+		const cachedResponse = await redis.get(cacheKey);
+
+		if (cachedResponse) {
+			return NextResponse.json(JSON.parse(cachedResponse));
+		}
+
+		// Fetch data from Supabase
 		const [
 			{ data: threadData, error: threadError },
 			{ data: votesData, error: votesError },
@@ -50,14 +63,20 @@ export async function GET(req: NextRequest) {
 			);
 		}
 
-		return NextResponse.json({
+		const responseData = {
 			thread: threadData,
 			votes: votesData,
 			comments: commentsData,
 			nominations: nominationsData,
-		});
+		};
+
+		// Cache the response in Redis
+		await redis.set(cacheKey, JSON.stringify(responseData), "EX", CACHE_DURATION);
+
+		return NextResponse.json(responseData);
 	} catch (error) {
 		console.error("Error loading thread metrics:", error);
+
 		return NextResponse.json({ error: "Error loading thread metrics" }, { status: 500 });
 	}
 }
