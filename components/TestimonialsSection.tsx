@@ -1,3 +1,4 @@
+"use client";
 import { Card } from "@heroui/react";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
@@ -61,8 +62,8 @@ export default function TestimonialsSection() {
 								<div className="text-xs text-zinc-500">{t.role}</div>
 							</div>
 						</motion.div>
-						<p className="italic text-zinc-700 dark:text-zinc-300">
-							<QuoteIcon /> {t.quote} <QuoteIcon />
+						<p className="italic text-zinc-700 dark:text-zinc-300 flex	items-start gap-2">
+							<QuoteIcon size={30} /> {t.quote} <QuoteIcon size={30} />
 						</p>
 					</Card>
 				))}

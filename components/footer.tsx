@@ -25,7 +25,7 @@ const links = [
 
 const Footer: React.FC = () => {
 	return (
-		<footer className="sm:hidden md:hidden lg:flex flex-col w-full border-t border-default-200 bg-primary-50 text-foreground static bottom-0">
+		<footer className="sm:hidden md:hidden lg:flex flex-col w-full bg-primary-50 text-foreground">
 			<div className="max-w-7xl mx-auto px-4 py-8 flex flex-col md:flex-row md:items-center md:justify-between gap-8">
 				{/* Branding & Slogan */}
 				<div className="flex flex-col items-center md:items-start gap-2">

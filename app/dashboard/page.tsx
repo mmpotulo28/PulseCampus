@@ -1,8 +1,8 @@
 "use client";
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import { button as buttonStyles } from "@heroui/theme";
 import { UserGroupIcon, ChatBubbleLeftRightIcon, ChartBarIcon } from "@heroicons/react/24/solid";
+import { Button } from "@heroui/react";
 
 export default function DashboardPage() {
 	const { user } = useUser();
@@ -36,24 +36,20 @@ export default function DashboardPage() {
 				</Link>
 			</div>
 			<div className="flex gap-4">
-				<Link
-					className={buttonStyles({
-						color: "primary",
-						radius: "full",
-						variant: "shadow",
-					})}
-					href="/dashboard/groups/create">
+				<Button
+					as={Link}
+					color="primary"
+					href="/dashboard/groups/create"
+					startContent={<UserGroupIcon additive="sum" className="h-4 w-4" />}>
 					Create Group
-				</Link>
-				<Link
-					className={buttonStyles({
-						color: "secondary",
-						radius: "full",
-						variant: "shadow",
-					})}
-					href="/dashboard/threads/create">
+				</Button>
+				<Button
+					as={Link}
+					color="secondary"
+					href="/dashboard/threads/create"
+					startContent={<ChatBubbleLeftRightIcon additive="sum" className="h-4 w-4" />}>
 					New Proposal
-				</Link>
+				</Button>
 			</div>
 		</div>
 	);

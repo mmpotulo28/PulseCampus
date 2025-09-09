@@ -8,11 +8,16 @@ import { Spinner } from "@heroui/react";
 
 import { useGroup } from "@/hooks/useGroup";
 import { useThreads } from "@/hooks/useThreads";
-import GroupHeader from "@/components/groups/GroupHeader";
-import GroupStats from "@/components/groups/GroupStats";
-import GroupThreadsList from "@/components/groups/GroupThreadsList";
-import GroupActions from "@/components/groups/GroupActions";
-import GroupSidePanel from "@/components/groups/GroupSidePanel";
+import dynamic from "next/dynamic";
+
+// dynamic import to prevent hydration issues
+const GroupHeader = dynamic(() => import("@/components/groups/GroupHeader"), { ssr: false });
+const GroupStats = dynamic(() => import("@/components/groups/GroupStats"), { ssr: false });
+const GroupThreadsList = dynamic(() => import("@/components/groups/GroupThreadsList"), {
+	ssr: false,
+});
+const GroupActions = dynamic(() => import("@/components/groups/GroupActions"), { ssr: false });
+const GroupSidePanel = dynamic(() => import("@/components/groups/GroupSidePanel"), { ssr: false });
 
 export default function GroupDetailsPage() {
 	const { groupId } = useParams();
