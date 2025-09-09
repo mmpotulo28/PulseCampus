@@ -150,7 +150,7 @@ export function OrganizationSidePanel() {
 	const { isAdmin, isExco } = usePermissions();
 
 	return (
-		<Card className="p-6 rounded-2xl shadow-lg bg-gradient-to-br from-primary/10 via-background to-secondary/10 dark:bg-zinc-800 flex flex-col gap-4 border-2 border-primary/20">
+		<Card className="p-6 rounded-2xl max-w-md shadow-lg bg-gradient-to-br from-primary/10 via-background to-secondary/10 dark:bg-zinc-800 flex flex-col gap-4 border-2 border-primary/20">
 			<div className="flex items-center gap-3 mb-2">
 				<BuildingLibraryIcon className="h-7 w-7 text-primary" />
 				<h3 className="text-lg font-bold">Organization Info</h3>

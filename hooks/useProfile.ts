@@ -19,13 +19,13 @@ export function useProfile(userId: string) {
 
 				if (!clerkUser) throw new Error(clerkData?.message || "User not found");
 
-				const { data: votesData } = await axios.get(`/api/votes`, {
+				const { data: votesData } = await axios.get(`/api/votes/user`, {
 					params: { user_id: userId },
 				});
-				const { data: commentsData } = await axios.get(`/api/comments`, {
+				const { data: commentsData } = await axios.get(`/api/comments/user`, {
 					params: { user_id: userId },
 				});
-				const { data: groupsData } = await axios.get(`/api/groups`, {
+				const { data: groupsData } = await axios.get(`/api/groups/user`, {
 					params: { user_id: userId },
 				});
 
