@@ -5,6 +5,11 @@ export function useProfile(userId: string) {
 	const [profile, setProfile] = useState<any>(null);
 	const [loading, setLoading] = useState(true);
 
+	// update profile states
+	const [updateProfileLoading, setUpdateProfileLoading] = useState(false);
+	const [updateProfileError, setUpdateProfileError] = useState<string | null>(null);
+	const [updateProfileSuccess, setUpdateProfileSuccess] = useState<string | null>(null);
+
 	useEffect(() => {
 		let cancelled = false;
 
@@ -19,16 +24,6 @@ export function useProfile(userId: string) {
 
 				if (!clerkUser) throw new Error(clerkData?.message || "User not found");
 
-				const { data: votesData } = await axios.get(`/api/votes/user`, {
-					params: { user_id: userId },
-				});
-				const { data: commentsData } = await axios.get(`/api/comments/user`, {
-					params: { user_id: userId },
-				});
-				const { data: groupsData } = await axios.get(`/api/groups/user`, {
-					params: { user_id: userId },
-				});
-
 				const profileData = {
 					name:
 						`${clerkUser?.firstName || ""} ${clerkUser?.lastName || ""}` ||
@@ -39,46 +34,14 @@ export function useProfile(userId: string) {
 					avatar: clerkUser?.imageUrl || "",
 					isVerified: clerkUser?.publicMetadata?.verified || false,
 					email: clerkUser?.emailAddresses?.[0]?.emailAddress || "",
-					course: clerkUser?.unsafeMetadata?.course || "",
-					yearOfStudy: clerkUser?.unsafeMetadata?.yearOfStudy || "",
-					skills: Array.isArray(clerkUser?.unsafeMetadata?.skills)
-						? clerkUser?.unsafeMetadata?.skills
+					course: clerkUser?.publicMetadata?.course || "",
+					yearOfStudy: clerkUser?.publicMetadata?.yearOfStudy || "",
+					skills: Array.isArray(clerkUser?.publicMetadata?.skills)
+						? clerkUser?.publicMetadata?.skills
 						: [],
-					interests: Array.isArray(clerkUser?.unsafeMetadata?.interests)
-						? clerkUser?.unsafeMetadata?.interests
+					interests: Array.isArray(clerkUser?.publicMetadata?.interests)
+						? clerkUser?.publicMetadata?.interests
 						: [],
-					socialLinks: [
-						...(clerkUser?.publicMetadata?.linkedin
-							? [
-									{
-										platform: "linkedin",
-										url: clerkUser.publicMetadata.linkedin,
-										icon: "linkedin",
-									},
-								]
-							: []),
-						...(clerkUser?.publicMetadata?.twitter
-							? [
-									{
-										platform: "twitter",
-										url: clerkUser.publicMetadata.twitter,
-										icon: "twitter",
-									},
-								]
-							: []),
-						...(clerkUser?.emailAddresses?.[0]?.emailAddress
-							? [
-									{
-										platform: "email",
-										url: `mailto:${clerkUser.emailAddresses[0].emailAddress}`,
-										icon: "mail",
-									},
-								]
-							: []),
-					],
-					totalVotes: votesData?.votes?.length || 0,
-					totalComments: commentsData?.comments?.length || 0,
-					totalGroups: groupsData?.groups?.length || 0,
 				};
 
 				if (!cancelled) setProfile(profileData);
@@ -96,5 +59,29 @@ export function useProfile(userId: string) {
 		};
 	}, [userId]);
 
-	return { profile, loading };
+	const updateProfile = async (updates: any) => {
+		setUpdateProfileLoading(true);
+		setUpdateProfileError(null);
+		setUpdateProfileSuccess(null);
+
+		try {
+			await axios.put(`/api/clerk/user`, updates);
+			setProfile((prev: any) => ({ ...prev, ...updates }));
+			setUpdateProfileSuccess("Profile updated successfully");
+		} catch (error) {
+			console.error("Error updating profile:", error);
+			setUpdateProfileError("Failed to update profile");
+		} finally {
+			setUpdateProfileLoading(false);
+		}
+	};
+
+	return {
+		profile,
+		loading,
+		updateProfile,
+		updateProfileLoading,
+		updateProfileError,
+		updateProfileSuccess,
+	};
 }
