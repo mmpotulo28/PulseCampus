@@ -4,17 +4,18 @@ import type { IGroup } from "@/types";
 import Link from "next/link";
 import { useOrganization, OrganizationSwitcher } from "@clerk/nextjs";
 import { UserGroupIcon, BuildingLibraryIcon } from "@heroicons/react/24/solid";
-import { Button, Divider, Spinner } from "@heroui/react";
+import { Button, Divider } from "@heroui/react";
 
 import GroupCard from "@/components/GroupCard";
 import { useGroup } from "@/hooks/useGroup";
 import { PlusCircleIcon } from "lucide-react";
+import Loading from "@/app/loading";
 
 export default function GroupsPage() {
 	const { organization } = useOrganization();
 	const { groups, groupsLoading, groupsError } = useGroup();
 
-	if (groupsLoading) return <Spinner className="m-auto" />;
+	if (groupsLoading) return <Loading />;
 	if (groupsError) return <div>Error loading groups</div>;
 
 	return (

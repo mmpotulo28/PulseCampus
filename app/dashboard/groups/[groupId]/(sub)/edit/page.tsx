@@ -1,15 +1,24 @@
 "use client";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Card, Input, Switch, Spinner, Divider, Button } from "@heroui/react";
+import { Card, Input, Switch, Divider, Button } from "@heroui/react";
 import { PencilSquareIcon, LockOpenIcon, LockClosedIcon } from "@heroicons/react/24/solid";
 
 import { usePermissions } from "@/hooks/usePermissions";
 import { useGroup } from "@/hooks/useGroup";
+import Loading from "@/app/loading";
 
 export default function EditGroupPage() {
 	const { groupId } = useParams();
-	const { group, getGroup, updateGroup, updateLoading, updateError, updateSuccess } = useGroup();
+	const {
+		group,
+		groupsLoading,
+		getGroup,
+		updateGroup,
+		updateLoading,
+		updateError,
+		updateSuccess,
+	} = useGroup();
 	const { isAdmin, isExco } = usePermissions();
 	const router = useRouter();
 
@@ -51,10 +60,10 @@ export default function EditGroupPage() {
 		}
 	}, [updateSuccess, updateLoading, updateError, groupId, router]);
 
-	if (!group)
+	if (!group && groupsLoading)
 		return (
 			<div className="flex justify-center items-center min-h-[40vh]">
-				<Spinner color="primary" size="lg" />
+				<Loading />
 			</div>
 		);
 

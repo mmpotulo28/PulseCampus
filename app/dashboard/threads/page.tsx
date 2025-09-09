@@ -116,7 +116,7 @@ export default function ThreadsPage() {
 					</div>
 
 					<div className="mb-6 flex flex-col gap-4">
-						{threadsWithCounts.map((t) => (
+						{threadsWithCounts?.map((t) => (
 							<ThreadCard key={t.id} thread={t} href={`/dashboard/threads/${t.id}`} />
 						))}
 					</div>

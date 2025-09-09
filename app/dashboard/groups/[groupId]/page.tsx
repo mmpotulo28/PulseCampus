@@ -4,11 +4,11 @@ import Link from "next/link";
 import { button as buttonStyles } from "@heroui/theme";
 import { useOrganization } from "@clerk/nextjs";
 import { useEffect } from "react";
-import { Spinner } from "@heroui/react";
 
 import { useGroup } from "@/hooks/useGroup";
 import { useThreads } from "@/hooks/useThreads";
 import dynamic from "next/dynamic";
+import Loading from "@/app/loading";
 
 // dynamic import to prevent hydration issues
 const GroupHeader = dynamic(() => import("@/components/groups/GroupHeader"), { ssr: false });
@@ -29,7 +29,7 @@ export default function GroupDetailsPage() {
 		getGroup(groupId as string);
 	}, [groupId, organization]);
 
-	if (getGroupLoading) return <Spinner className="m-auto" />;
+	if (getGroupLoading) return <Loading />;
 	if (getGroupError || !group) {
 		return (
 			<div className="py-12 px-4 max-w-2xl mx-auto text-center">

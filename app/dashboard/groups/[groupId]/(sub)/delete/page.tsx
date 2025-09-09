@@ -1,15 +1,24 @@
 "use client";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Card, Button, Spinner, Divider } from "@heroui/react";
+import { Card, Button, Divider } from "@heroui/react";
 import { TrashIcon } from "@heroicons/react/24/solid";
 
 import { usePermissions } from "@/hooks/usePermissions";
 import { useGroup } from "@/hooks/useGroup";
+import Loading from "@/app/loading";
 
 export default function DeleteGroupPage() {
 	const { groupId } = useParams();
-	const { group, getGroup, deleteGroup, deleteLoading, deleteError, deleteSuccess } = useGroup();
+	const {
+		group,
+		groupsLoading,
+		getGroup,
+		deleteGroup,
+		deleteLoading,
+		deleteError,
+		deleteSuccess,
+	} = useGroup();
 	const { isAdmin } = usePermissions();
 	const router = useRouter();
 
@@ -31,10 +40,10 @@ export default function DeleteGroupPage() {
 		}
 	}, [deleteSuccess, deleteLoading, deleteError, router]);
 
-	if (!group)
+	if (!group && groupsLoading)
 		return (
 			<div className="flex justify-center items-center min-h-[40vh]">
-				<Spinner color="primary" size="lg" />
+				<Loading />
 			</div>
 		);
 

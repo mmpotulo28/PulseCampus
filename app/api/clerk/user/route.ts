@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClerkClient } from "@clerk/backend";
 import { getAuth } from "@clerk/nextjs/server";
+import redis from "@/lib/config/redis";
+
+const CACHE_DURATION = 300; // Cache duration in seconds (5 minutes)
 
 const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
 
@@ -24,8 +27,19 @@ export async function GET(req: NextRequest) {
 		);
 	}
 
+	const cacheKey = `user_${userId}`;
+
 	try {
+		// Check Redis cache
+		const cachedResponse = await redis.get(cacheKey);
+
+		if (cachedResponse) {
+			return NextResponse.json(JSON.parse(cachedResponse));
+		}
 		const user = await clerkClient.users.getUser(userId as string);
+
+		// Cache the response in Redis
+		await redis.set(cacheKey, JSON.stringify({ user }), "EX", CACHE_DURATION);
 
 		return NextResponse.json(
 			{

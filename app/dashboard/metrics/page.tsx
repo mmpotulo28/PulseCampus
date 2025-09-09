@@ -1,17 +1,18 @@
 "use client";
-import { Divider, Spinner, Tabs, Tab } from "@heroui/react";
+import { Divider, Tabs, Tab } from "@heroui/react";
 import { UserGroupIcon, DocumentTextIcon } from "@heroicons/react/24/solid";
 
 import { useGroup } from "@/hooks/useGroup";
 import { useThreads } from "@/hooks/useThreads";
 import GroupCard from "@/components/GroupCard";
 import ThreadCard from "@/components/ThreadCard";
+import Loading from "@/app/loading";
 
 export default function MetricsPage() {
 	const { groups, groupsLoading, groupsError } = useGroup();
 	const { threads, threadsLoading, threadsError } = useThreads();
 
-	if (groupsLoading || threadsLoading) return <Spinner className="m-auto" />;
+	if (groupsLoading || threadsLoading) return <Loading />;
 	if (groupsError || threadsError) return <div>Error loading data</div>;
 
 	return (

@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { Button, Card, Spinner } from "@heroui/react";
+import { Button, Card } from "@heroui/react";
 import { ArrowLeftIcon } from "@heroicons/react/24/solid";
 import { title } from "@/components/primitives";
 import type { IThread } from "@/types";
+import Loading from "@/app/loading";
 
 export default function ThreadMetricsHeader({
 	thread,
@@ -16,7 +17,7 @@ export default function ThreadMetricsHeader({
 	if (loading)
 		return (
 			<div className="flex justify-center items-center min-h-[40vh]">
-				<Spinner color="primary" size="lg" />
+				<Loading />
 			</div>
 		);
 

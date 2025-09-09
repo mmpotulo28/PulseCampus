@@ -1,7 +1,7 @@
 "use client";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Button, Spinner } from "@heroui/react";
+import { Button } from "@heroui/react";
 import { button as buttonStyles } from "@heroui/theme";
 import { useUser } from "@clerk/nextjs";
 import { useEffect } from "react";
@@ -16,6 +16,7 @@ import VotingSection from "@/components/threads/VotingSection";
 import CommentsSection from "@/components/threads/CommentsSection";
 import InsightsPanel from "@/components/threads/InsightsPanel";
 import { useNominations } from "@/hooks/useNominations";
+import Loading from "@/app/loading";
 
 export default function ThreadDetailsPage() {
 	const { threadId } = useParams();
@@ -44,7 +45,7 @@ export default function ThreadDetailsPage() {
 	if (threadLoading)
 		return (
 			<div className="py-12 px-4 text-center">
-				<Spinner title="Loading thread..." />
+				<Loading title="Loading thread..." />
 			</div>
 		);
 	if (threadError || !thread) {

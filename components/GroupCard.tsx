@@ -66,9 +66,5 @@ export default function GroupCard({ group, href }: GroupCardProps) {
 		</motion.div>
 	);
 
-	if (href) {
-		return <Link href={href}>{cardContent}</Link>;
-	}
-
 	return cardContent;
 }
