@@ -41,16 +41,13 @@ export default function InviteNomineePage() {
 			return;
 		}
 		await addNomination({
-			nomination: {
-				key: "",
-				id: "",
-				thread_id: threadId as string,
-				name,
-				user_id: "",
-				email,
-				label: name,
-			},
-			threadId: threadId as string,
+			key: "",
+			id: "",
+			thread_id: threadId as string,
+			name,
+			user_id: "",
+			email,
+			label: name,
 		});
 		setInviteSuccess("Nominee invited successfully!");
 		setName("");

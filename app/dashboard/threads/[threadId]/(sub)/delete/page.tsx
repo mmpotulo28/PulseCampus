@@ -5,20 +5,15 @@ import { Card, Button, Spinner, Divider } from "@heroui/react";
 import { TrashIcon } from "@heroicons/react/24/solid";
 
 import { useThreads } from "@/hooks/useThreads";
+import { usePermissions } from "@/hooks/usePermissions";
 
 export default function DeleteThreadPage() {
 	const { threadId } = useParams();
-	const {
-		getThread,
-		thread,
-		threadLoading,
-		isAdmin,
-		deleteThread,
-		deleting,
-		deleteError,
-		deleteSuccess,
-	} = useThreads();
+	const { getThread, thread, threadLoading, deleteThread, deleting, deleteError, deleteSuccess } =
+		useThreads();
 	const router = useRouter();
+
+	const { isAdmin } = usePermissions();
 
 	useEffect(() => {
 		getThread(threadId as string);

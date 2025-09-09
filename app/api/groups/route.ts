@@ -31,6 +31,7 @@ export async function GET(req: NextRequest) {
 	try {
 		// Check Redis cache
 		const cachedResponse = await redis.get(cacheKey);
+
 		if (cachedResponse) {
 			return NextResponse.json(JSON.parse(cachedResponse));
 		}
@@ -48,6 +49,7 @@ export async function GET(req: NextRequest) {
 		return NextResponse.json({ groups: data });
 	} catch (err) {
 		console.error("Error fetching groups:", err);
+
 		return NextResponse.json({ error: "Error fetching groups" }, { status: 500 });
 	}
 }
@@ -92,6 +94,7 @@ export async function POST(req: NextRequest) {
 
 	// Invalidate cache for groups
 	const cacheKey = `groups_${org_id}`;
+
 	await redis.del(cacheKey);
 
 	return NextResponse.json({ group: data[0] });

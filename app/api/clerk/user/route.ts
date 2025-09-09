@@ -64,6 +64,7 @@ export async function PUT(req: NextRequest) {
 
 	try {
 		const updates = await req.json();
+
 		console.log("Received PUT request to update user profile", updates);
 
 		await clerkClient.users.updateUser(auth.userId, {

@@ -20,6 +20,7 @@ export function useNominations(threadId: string) {
 			const { data } = await axios.get(`/api/nominations`, {
 				params: { thread_id: threadId },
 			});
+
 			setNominations(data.nominations || []);
 		} catch (err: any) {
 			setError(err.response?.data?.error || "Failed to fetch nominations");

@@ -31,16 +31,13 @@ export default function InsightsPanel({ votes, thread }: InsightsPanelProps) {
 
 		if (alreadyNominated) return;
 		await addNomination({
-			nomination: {
-				id: "",
-				thread_id: thread.id,
-				name: user.fullName || user.username || "Anonymous",
-				user_id: user.id,
-				email: user.emailAddresses?.[0]?.emailAddress || "",
-				label: user.fullName || user.username || "Anonymous",
-				key: user.id || "",
-			},
-			threadId: thread.id,
+			id: "",
+			thread_id: thread.id,
+			name: user.fullName || user.username || "Anonymous",
+			user_id: user.id,
+			email: user.emailAddresses?.[0]?.emailAddress || "",
+			label: user.fullName || user.username || "Anonymous",
+			key: user.id || "",
 		});
 		setNominated(true);
 	};

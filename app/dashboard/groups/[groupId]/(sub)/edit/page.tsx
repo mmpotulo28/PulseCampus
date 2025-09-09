@@ -37,7 +37,7 @@ export default function EditGroupPage() {
 		await updateGroup(groupId as string, {
 			name,
 			description: desc,
-			isPublic,
+			is_public: isPublic,
 			activity,
 		});
 	};

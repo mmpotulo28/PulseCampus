@@ -25,6 +25,10 @@ export function useGroup() {
 	const [inviteError, setInviteError] = useState<string | null>(null);
 	const [inviteSuccess, setInviteSuccess] = useState<string | null>(null);
 
+	const [updateLoading, setUpdateLoading] = useState(false);
+	const [updateError, setUpdateError] = useState<string | null>(null);
+	const [updateSuccess, setUpdateSuccess] = useState<string | null>(null);
+
 	const fetchGroups = useCallback(async (orgId: string) => {
 		setGroupsLoading(true);
 		setGroupsError(null);
@@ -33,6 +37,7 @@ export function useGroup() {
 			const { data } = await axios.get(`/api/groups`, {
 				params: { org_id: orgId },
 			});
+
 			setGroups(data.groups || []);
 		} catch (err: any) {
 			setGroupsError(err.response?.data?.error || "Failed to fetch groups");
@@ -55,6 +60,7 @@ export function useGroup() {
 			const { data } = await axios.get(`/api/groups/group`, {
 				params: { group_id: groupId },
 			});
+
 			setGroup(data.group || null);
 		} catch (err: any) {
 			setGetGroupError(err.response?.data?.error || "Failed to fetch group");
@@ -70,6 +76,7 @@ export function useGroup() {
 
 			try {
 				const { data } = await axios.post("/api/groups", group);
+
 				console.log("Group created:", data.group);
 				setCreateSuccess("Group created successfully.");
 				fetchGroups(group.org_id);
@@ -90,6 +97,7 @@ export function useGroup() {
 			const { data } = await axios.delete(`/api/groups`, {
 				params: { group_id: groupId },
 			});
+
 			console.log("Group deleted:", data);
 			setDeleteSuccess("Group deleted successfully.");
 		} catch (err: any) {
@@ -117,6 +125,23 @@ export function useGroup() {
 		setInviteLoading(false);
 	}, []);
 
+	const updateGroup = useCallback(async (groupId: string, updates: Partial<IGroup>) => {
+		setUpdateLoading(true);
+		setUpdateError(null);
+		setUpdateSuccess(null);
+
+		try {
+			await axios.put(`/api/groups/group`, updates, {
+				params: { group_id: groupId },
+			});
+			setUpdateSuccess("Group updated successfully.");
+		} catch (err: any) {
+			setUpdateError(err.response?.data?.error || "Failed to update group");
+		} finally {
+			setUpdateLoading(false);
+		}
+	}, []);
+
 	return {
 		groups,
 		groupsLoading,
@@ -141,5 +166,10 @@ export function useGroup() {
 		inviteLoading,
 		inviteError,
 		inviteSuccess,
+		// update group
+		updateGroup,
+		updateLoading,
+		updateError,
+		updateSuccess,
 	};
 }

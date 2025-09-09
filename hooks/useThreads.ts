@@ -27,6 +27,7 @@ export function useThreads(groupId?: string) {
 			const { data } = await axios.get(`/api/threads`, {
 				params: { group_id: groupId },
 			});
+
 			setThreads(data.threads || []);
 		} catch (err: any) {
 			setThreadsError(err.response?.data?.error || "Failed to fetch threads");
@@ -46,6 +47,7 @@ export function useThreads(groupId?: string) {
 			const { data } = await axios.get(`/api/threads/thread`, {
 				params: { thread_id: threadId },
 			});
+
 			setThread(data.thread || null);
 		} catch (err: any) {
 			setThreadError(err.response?.data?.error || "Failed to fetch thread");

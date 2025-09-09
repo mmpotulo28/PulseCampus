@@ -27,6 +27,7 @@ export function useComments(threadId: string) {
 			const { data } = await axios.get(`/api/comments`, {
 				params: { thread_id: threadId },
 			});
+
 			setComments(data.comments || []);
 		} catch (err: any) {
 			setCommentsError(err.response?.data?.error || "Failed to fetch comments");

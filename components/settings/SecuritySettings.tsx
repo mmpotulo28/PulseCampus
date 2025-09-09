@@ -1,47 +1,42 @@
 import { useState } from "react";
-import { Card, CardBody, CardHeader, Input, Button } from "@heroui/react";
+import { Card, CardBody, CardHeader, Switch, Button } from "@heroui/react";
 
 export default function SecuritySettings() {
-	const [currentPassword, setCurrentPassword] = useState("");
-	const [newPassword, setNewPassword] = useState("");
-	const [confirmPassword, setConfirmPassword] = useState("");
+	const [trackLocation, setTrackLocation] = useState(false);
+	const [trackActivity, setTrackActivity] = useState(false);
+	const [trackDevice, setTrackDevice] = useState(false);
 
-	const handleUpdatePassword = () => {
-		// Handle password update logic here
-		console.log({ currentPassword, newPassword, confirmPassword });
+	const handleSaveSettings = () => {
+		// Handle saving privacy-related security settings here
+		console.log({ trackLocation, trackActivity, trackDevice });
 	};
 
 	return (
 		<Card className="mb-6">
 			<CardHeader>
-				<h3 className="text-lg font-bold">Change Password</h3>
+				<h3 className="text-lg font-bold">Privacy & Security Settings</h3>
 			</CardHeader>
 			<CardBody>
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-					<Input
-						label="Current Password"
-						placeholder="Enter current password"
-						type="password"
-						value={currentPassword}
-						onChange={(e) => setCurrentPassword(e.target.value)}
-					/>
-					<Input
-						label="New Password"
-						placeholder="Enter new password"
-						type="password"
-						value={newPassword}
-						onChange={(e) => setNewPassword(e.target.value)}
-					/>
-					<Input
-						label="Confirm Password"
-						placeholder="Confirm new password"
-						type="password"
-						value={confirmPassword}
-						onChange={(e) => setConfirmPassword(e.target.value)}
+				<div className="flex items-center justify-between mb-4">
+					<span className="text-sm text-gray-600">Track Location</span>
+					<Switch
+						checked={trackLocation}
+						onChange={() => setTrackLocation(!trackLocation)}
 					/>
 				</div>
-				<Button color="primary" className="mt-4" onClick={handleUpdatePassword}>
-					Update Password
+				<div className="flex items-center justify-between mb-4">
+					<span className="text-sm text-gray-600">Track Activity</span>
+					<Switch
+						checked={trackActivity}
+						onChange={() => setTrackActivity(!trackActivity)}
+					/>
+				</div>
+				<div className="flex items-center justify-between mb-4">
+					<span className="text-sm text-gray-600">Track Device Usage</span>
+					<Switch checked={trackDevice} onChange={() => setTrackDevice(!trackDevice)} />
+				</div>
+				<Button color="primary" className="mt-4" onClick={handleSaveSettings}>
+					Save Settings
 				</Button>
 			</CardBody>
 		</Card>

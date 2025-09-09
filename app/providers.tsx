@@ -63,6 +63,7 @@ if (typeof window !== "undefined") {
 				trustKey: process.env.NEXT_PUBLIC_NEW_RELIC_TRUST_KEY,
 			},
 		};
+
 		new BrowserAgent(options);
 	});
 }

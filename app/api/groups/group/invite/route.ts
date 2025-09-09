@@ -35,6 +35,7 @@ export async function POST(req: NextRequest) {
 		return NextResponse.json({ message: "Users invited successfully." });
 	} catch (error) {
 		console.error("Error inviting users to group:", error);
+
 		return NextResponse.json({ error: "Error inviting users to group." }, { status: 500 });
 	}
 }

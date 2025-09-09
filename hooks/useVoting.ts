@@ -65,6 +65,7 @@ export function useVoting({
 			});
 
 			const voteCounts: Record<string, number> = {};
+
 			data.votes.forEach((v: any) => {
 				const value = weighted ? v.weight || 1 : 1;
 

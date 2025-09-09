@@ -33,12 +33,14 @@ export async function GET(req: NextRequest) {
 		// Filter groups where the user is in the members_list
 		const userGroups = groups.filter((group) => {
 			const members = JSON.parse(group.members_list || "[]");
+
 			return members.some((member: { name: string }) => member.name === user_id);
 		});
 
 		return NextResponse.json({ groups: userGroups });
 	} catch (err) {
 		console.error("Error fetching groups for user:", err);
+
 		return NextResponse.json({ error: "Failed to fetch groups for user." }, { status: 500 });
 	}
 }
