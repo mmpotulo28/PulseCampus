@@ -9,7 +9,6 @@ import { fontSans } from "@/config/fonts";
 import { Navbar } from "@/components/navbar";
 import MobileTabs from "@/components/MobileTabs";
 import Footer from "@/components/footer";
-import { Suspense } from "react";
 
 export const metadata: Metadata = {
 	title: {
