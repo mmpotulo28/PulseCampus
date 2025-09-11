@@ -118,3 +118,26 @@ export interface CreateGroupFormProps {
 	groups: any[];
 	handleSubmit: (e: React.FormEvent) => void;
 }
+
+export interface IUseThreads {
+	threads: IThread[];
+	threadsLoading: boolean;
+	threadsError: string | null;
+	createThread: (
+		title: string,
+		description: string,
+		voteType: "yesno" | "mcq",
+		deadline?: string,
+	) => Promise<void>;
+	createLoading: boolean;
+	createError: string | null;
+	createSuccess: string | null;
+	deleteThread: (threadId: string) => Promise<void>;
+	deleting: boolean;
+	deleteError: string | null;
+	deleteSuccess: string | null;
+	thread: IThread | null;
+	threadLoading: boolean;
+	threadError: string | null;
+	getThread: (threadId: string) => Promise<void>;
+}

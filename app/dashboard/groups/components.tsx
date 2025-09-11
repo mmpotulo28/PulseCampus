@@ -189,7 +189,7 @@ export function OrganizationSidePanel() {
 						<div className="flex items-center gap-2">
 							<UsersIcon className="h-4 w-4 text-secondary" />
 							<span className="font-semibold">Groups:</span>
-							<span>{groups.length}</span>
+							<span>{groups?.length}</span>
 						</div>
 					</div>
 					<Divider className="my-2" />

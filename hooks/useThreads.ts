@@ -1,12 +1,9 @@
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import axios from "axios";
-import type { IThread } from "@/types";
+import type { IThread, IUseThreads } from "@/types";
+import useSWR from "swr";
 
-export function useThreads(groupId?: string) {
-	const [threads, setThreads] = useState<IThread[]>([]);
-	const [threadsLoading, setThreadsLoading] = useState(false);
-	const [threadsError, setThreadsError] = useState<string | null>(null);
-
+export function useThreads(groupId?: string): IUseThreads {
 	const [createLoading, setCreateLoading] = useState(false);
 	const [createError, setCreateError] = useState<string | null>(null);
 	const [createSuccess, setCreateSuccess] = useState<string | null>(null);
@@ -19,31 +16,39 @@ export function useThreads(groupId?: string) {
 	const [threadLoading, setThreadLoading] = useState(false);
 	const [threadError, setThreadError] = useState<string | null>(null);
 
-	const fetchThreads = useCallback(async () => {
-		setThreadsLoading(true);
-		setThreadsError(null);
-
-		try {
-			const { data } = await axios.get(`/api/threads`, {
+	const threadsFetcher = useCallback(
+		async (url: string) => {
+			const { data } = await axios.get(url, {
 				params: { group_id: groupId },
 			});
 
-			setThreads(data.threads || []);
-		} catch (err: any) {
-			setThreadsError(err.response?.data?.error || "Failed to fetch threads");
-		}
-		setThreadsLoading(false);
-	}, [groupId]);
+			return data.threads || [];
+		},
+		[groupId],
+	);
 
-	useEffect(() => {
-		fetchThreads();
-	}, [fetchThreads, groupId]);
+	const {
+		data: threads = [],
+		error: threadsError,
+		isLoading: threadsLoading,
+		mutate: fetchThreads,
+	} = useSWR(`/api/threads`, threadsFetcher);
 
 	const getThread = useCallback(async (threadId: string) => {
 		setThreadLoading(true);
 		setThreadError(null);
 
 		try {
+			// first check if the thread is already in the threads list
+			const existingThread = threads?.find((t: IThread) => t.id === threadId);
+
+			if (existingThread) {
+				setThread(existingThread);
+				setThreadLoading(false);
+
+				return;
+			}
+
 			const { data } = await axios.get(`/api/threads/thread`, {
 				params: { thread_id: threadId },
 			});

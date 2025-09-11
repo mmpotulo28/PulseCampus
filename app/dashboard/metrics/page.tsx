@@ -50,7 +50,7 @@ export default function MetricsPage() {
 						</div>
 					}>
 					<div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-						{threads.map((thread) => (
+						{threads?.map((thread) => (
 							<ThreadCard
 								key={thread.id}
 								thread={thread}

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { NextRequest, NextResponse } from "next/server";
 import { createClerkClient } from "@clerk/backend";
 import { getAuth } from "@clerk/nextjs/server";
@@ -6,6 +7,28 @@ import redis from "@/lib/config/redis";
 const CACHE_DURATION = 300; // Cache duration in seconds (5 minutes)
 
 const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+
+function formatProfile(clerkUser: any) {
+	return {
+		name:
+			`${clerkUser?.firstName || ""} ${clerkUser?.lastName || ""}` ||
+			clerkUser?.username ||
+			"Unknown",
+		role: clerkUser?.publicMetadata?.role || "Member",
+		location: clerkUser?.publicMetadata?.location || "",
+		avatar: clerkUser?.imageUrl || "",
+		isVerified: clerkUser?.publicMetadata?.verified || false,
+		email: clerkUser?.emailAddresses?.[0]?.emailAddress || "",
+		course: clerkUser?.publicMetadata?.course || "",
+		yearOfStudy: clerkUser?.publicMetadata?.yearOfStudy || "",
+		skills: Array.isArray(clerkUser?.publicMetadata?.skills)
+			? clerkUser?.publicMetadata?.skills
+			: [],
+		interests: Array.isArray(clerkUser?.publicMetadata?.interests)
+			? clerkUser?.publicMetadata?.interests
+			: [],
+	};
+}
 
 export async function GET(req: NextRequest) {
 	const { searchParams } = new URL(req.url);
@@ -34,18 +57,33 @@ export async function GET(req: NextRequest) {
 		const cachedResponse = await redis.get(cacheKey);
 
 		if (cachedResponse) {
-			return NextResponse.json(JSON.parse(cachedResponse));
+			const cacheData = JSON.parse(cachedResponse);
+
+			return NextResponse.json(
+				{
+					error: false,
+					message: "User found in cache.",
+					...cacheData,
+				},
+				{ status: 200 },
+			);
 		}
 		const user = await clerkClient.users.getUser(userId as string);
 
 		// Cache the response in Redis
-		await redis.set(cacheKey, JSON.stringify({ user }), "EX", CACHE_DURATION);
+		await redis.set(
+			cacheKey,
+			JSON.stringify({ user, profile: formatProfile(user) }),
+			"EX",
+			CACHE_DURATION,
+		);
 
 		return NextResponse.json(
 			{
 				error: false,
 				message: "User found.",
 				user,
+				profile: formatProfile(user),
 			},
 			{ status: 200 },
 		);
@@ -57,6 +95,7 @@ export async function GET(req: NextRequest) {
 				error: true,
 				message: "User not found.",
 				user: null,
+				profile: null,
 			},
 			{ status: 404 },
 		);

@@ -11,12 +11,11 @@ import { PlusCircleIcon } from "lucide-react";
 
 // Thread Stats Header
 function ThreadsStatsHeader({ threads }: { threads: any[] }) {
-	const total = threads.length;
-	const open = threads.filter((t) => t.status === "open").length;
-	const closed = threads.filter((t) => t.status === "closed").length;
+	const total = threads?.length;
+	const open = threads?.filter((t) => t.status === "open").length;
+	const closed = threads?.filter((t) => t.status === "closed").length;
 	const lastActivity = useMemo(() => {
-		if (!threads.length) return "-";
-		const dates = threads.map((t) => new Date(t.updated_at || t.created_at));
+		const dates = threads?.map((t) => new Date(t.updated_at || t.created_at));
 		const latest = new Date(Math.max(...dates.map((d) => d.getTime())));
 
 		return latest.toLocaleString();
@@ -96,7 +95,7 @@ export default function ThreadsPage() {
 	// Example: add votesCount/commentsCount for demo (replace with real data if available)
 	const threadsWithCounts = useMemo(
 		() =>
-			threads.map((t) => ({
+			threads?.map((t) => ({
 				...t,
 				votesCount: t.votes?.length || Math.floor(Math.random() * 20),
 				commentsCount: t.comments?.length || Math.floor(Math.random() * 10),

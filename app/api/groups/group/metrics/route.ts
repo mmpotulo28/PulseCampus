@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
 			return NextResponse.json({ error: threadsError.message }, { status: 500 });
 		}
 
-		const threadIds = threads.map((thread) => thread.id);
+		const threadIds = threads?.map((thread) => thread.id);
 
 		const [{ data: votes, error: votesError }, { data: comments, error: commentsError }] =
 			await Promise.all([

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import type { IThread, IVote, IComment, IConsensus, INomination } from "@/types";
+import useSWR from "swr";
 
 export interface ThreadMetrics {
 	thread: IThread | null;
@@ -26,33 +27,30 @@ export function useThreadMetrics(threadId: string) {
 	const [comments, setComments] = useState<IComment[]>([]);
 	const [nominations, setNominations] = useState<INomination[]>([]);
 	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
+
+	// swr fetcher
+	const fetcher = async (url: string) => {
+		const { data } = await axios.get(url, {
+			params: { thread_id: threadId },
+		});
+
+		return data || null;
+	};
+
+	const { data: threadMetricsData = null, error } = useSWR(
+		threadId ? `/api/threads/metrics` : null,
+		fetcher,
+	);
 
 	useEffect(() => {
-		async function fetchMetrics() {
-			setLoading(true);
-			setError(null);
-
-			try {
-				const { data } = await axios.get(`/api/threads/metrics`, {
-					params: { thread_id: threadId },
-				});
-
-				setThread(data.thread || null);
-				setVotes(data.votes || []);
-				setComments(data.comments || []);
-				setNominations(data.nominations || []);
-			} catch (err: any) {
-				setError(err.response?.data?.error || "Failed to fetch thread metrics");
-			} finally {
-				setLoading(false);
-			}
+		if (threadMetricsData) {
+			setThread(threadMetricsData.thread || null);
+			setVotes(threadMetricsData.votes || []);
+			setComments(threadMetricsData.comments || []);
+			setNominations(threadMetricsData.nominations || []);
 		}
-
-		if (threadId) {
-			fetchMetrics();
-		}
-	}, [threadId]);
+		setLoading(false);
+	}, [threadMetricsData]);
 
 	const totalVotes = votes.length;
 	const totalComments = comments.length;

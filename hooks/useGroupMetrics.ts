@@ -1,92 +1,93 @@
-import { useMemo, useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import type { IThread, IVote, IComment } from "@/types";
+import useSWR from "swr";
 
-export interface GroupMetrics {
+export interface IGroupMetrics {
 	threads: IThread[];
 	votes: IVote[];
 	comments: IComment[];
 	activeMembers: number;
 	pulseScore: number;
-	heatmap: Record<string, number>;
+	heatmap?: Record<string, number>;
 	topThreads: (IThread & { voteCount: number })[];
 	recentComments: IComment[];
+	heatmapData?: { day: string; count: number }[];
+	voteDistribution?: { name: string; value: number }[];
+	avgVotesPerThread?: string;
+	topVotedThread?: { thread: IThread | null; count: number };
+	totalComments?: number;
+	mostActiveCommenterId?: string;
+	mostActiveCommenterCount?: number;
+	totalVotes?: number;
 }
+
+const initialMetrics: IGroupMetrics = {
+	threads: [],
+	votes: [],
+	comments: [],
+	activeMembers: 0,
+	pulseScore: 0,
+	heatmap: undefined,
+	topThreads: [],
+	recentComments: [],
+};
 
 export function useGroupMetrics(
 	groupId: string,
-): GroupMetrics & { loading: boolean; error: string | null } {
-	const [groupMetricsState, setGroupMetricsState] = useState<{
-		threads: IThread[];
-		votes: IVote[];
-		comments: IComment[];
-		dataLoading: boolean;
-		dataError: string | null;
-	}>({ threads: [], votes: [], comments: [], dataLoading: false, dataError: null });
+): IGroupMetrics & { loading: boolean; error: string | null } {
+	const [votes, setVotes] = useState<IVote[]>([]);
+	const [comments, setComments] = useState<IComment[]>([]);
+	const [threads, setThreads] = useState<IThread[]>([]);
+
+	// swr fetcher
+	const fetcher = async (url: string) => {
+		const { data } = await axios.get(url, {
+			params: { group_id: groupId },
+		});
+
+		return data;
+	};
+
+	const {
+		data: groupMetricsData = initialMetrics,
+		isLoading: loading,
+		error,
+	} = useSWR(groupId ? `/api/groups/group/metrics` : null, fetcher);
 
 	useEffect(() => {
-		async function fetchMetrics() {
-			setGroupMetricsState((prev) => ({ ...prev, dataLoading: true, dataError: null }));
-
-			try {
-				const { data } = await axios.get(`/api/groups/group/metrics`, {
-					params: { group_id: groupId },
-				});
-
-				setGroupMetricsState({
-					threads: data.threads || [],
-					votes: data.votes || [],
-					comments: data.comments || [],
-					dataLoading: false,
-					dataError: null,
-				});
-			} catch (err: any) {
-				setGroupMetricsState((prev) => ({
-					...prev,
-					dataLoading: false,
-					dataError: err.response?.data?.error || "Failed to fetch group metrics",
-				}));
-			}
+		if (groupMetricsData) {
+			setVotes(groupMetricsData.votes || []);
+			setComments(groupMetricsData.comments || []);
+			setThreads(groupMetricsData.threads || []);
 		}
+	}, [groupMetricsData]);
 
-		if (groupId) {
-			fetchMetrics();
-		}
-	}, [groupId]);
-
-	const loading = groupMetricsState.dataLoading;
-	const error = groupMetricsState.dataError;
-
+	// DERIVED METRICS
 	const activeMembers = useMemo(() => {
 		if (loading) return 0;
 
 		return new Set([
-			...(groupMetricsState.votes?.map((v: IVote) => v.user_id) || []),
-			...(groupMetricsState.comments?.map((c: IComment) => c.user_id) || []),
+			...(votes.map((v: IVote) => v.user_id) || []),
+			...(comments.map((c: IComment) => c.user_id) || []),
 		]).size;
-	}, [groupMetricsState.votes, groupMetricsState.comments, loading]);
+	}, [votes, comments, loading]);
 
 	const pulseScore = useMemo(() => {
-		if (loading || groupMetricsState.threads.length === 0) return 0;
+		if (loading || threads.length === 0) return 0;
 
 		return Math.round(
-			(((groupMetricsState.votes?.length || 0) + (groupMetricsState.comments?.length || 0)) /
-				(groupMetricsState.threads.length * Math.max(activeMembers, 1))) *
-				100,
+			(((votes.length || 0) + (comments?.length || 0)) /
+				(threads.length * Math.max(activeMembers, 1))) *
+				10,
 		);
-	}, [
-		groupMetricsState.votes,
-		groupMetricsState.comments,
-		groupMetricsState.threads.length,
-		activeMembers,
-		loading,
-	]);
+	}, [votes, comments, threads.length, activeMembers, loading]);
 
 	const heatmap = useMemo(() => {
 		if (loading) return {};
 		const map: Record<string, number> = {};
 
-		groupMetricsState.votes?.forEach((v: IVote) => {
+		votes.forEach((v: IVote) => {
 			if (v.created_at) {
 				const day = new Date(v.created_at).toLocaleDateString();
 
@@ -95,42 +96,101 @@ export function useGroupMetrics(
 		});
 
 		return map;
-	}, [groupMetricsState.votes, loading]);
+	}, [votes, loading]);
 
 	const topThreads = useMemo(() => {
 		if (loading) return [];
 
-		return groupMetricsState.threads
-			.map((t) => ({
+		return threads
+			.map((t: IThread) => ({
 				...t,
-				voteCount:
-					groupMetricsState.votes?.filter((v: IVote) => v.thread_id === t.id).length || 0,
+				voteCount: votes.filter((v: IVote) => v.thread_id === t.id).length || 0,
 			}))
-			.sort((a, b) => b.voteCount - a.voteCount)
+			.sort((a: { voteCount: number }, b: { voteCount: number }) => b.voteCount - a.voteCount)
 			.slice(0, 3);
-	}, [groupMetricsState.threads, groupMetricsState.votes, loading]);
+	}, [threads, votes, loading]);
 
 	const recentComments = useMemo(() => {
 		if (loading) return [];
 
 		return (
-			groupMetricsState.comments
+			comments
 				?.sort(
-					(a, b) =>
+					(a: IComment, b: IComment) =>
 						new Date(b.created_at || "").getTime() -
 						new Date(a.created_at || "").getTime(),
 				)
 				.slice(0, 5) || []
 		);
-	}, [groupMetricsState.comments, loading]);
+	}, [comments, loading]);
 
-	const groupMetrics: GroupMetrics & {
+	// CALCULATED METRICS
+	const heatmapData = useMemo(() => {
+		if (!heatmap) return [];
+
+		return Object.entries(heatmap || {}).map(([day, count]) => ({
+			day,
+			count,
+		}));
+	}, [heatmap]);
+
+	const voteDistribution = useMemo(() => {
+		if (!votes || !comments) return [];
+
+		return [
+			{ name: "Votes", value: votes.length },
+			{ name: "Comments", value: comments.length },
+		];
+	}, [votes, comments]);
+
+	const totalVotes = votes.length || 0;
+	const totalComments = comments?.length || 0;
+
+	const avgVotesPerThread = threads?.length > 0 ? (totalVotes / threads.length).toFixed(2) : "0";
+
+	const topVotedThread = useMemo(() => {
+		return threads?.length > 0
+			? threads.reduce<{ thread: IThread | null; count: number }>(
+					(max, t) => {
+						const count = votes.filter((v) => v.thread_id === t.id).length || 0;
+
+						return count > max.count ? { thread: t, count } : max;
+					},
+					{ thread: null, count: 0 },
+				)
+			: { thread: null, count: 0 };
+	}, [threads, votes]);
+
+	const commenterCounts = useMemo(() => {
+		return (
+			comments?.reduce(
+				(acc, c) => {
+					acc[c.user_id] = (acc[c.user_id] || 0) + 1;
+
+					return acc;
+				},
+				{} as Record<string, number>,
+			) || {}
+		);
+	}, [comments]);
+
+	const mostActiveCommenterId = useMemo(
+		() =>
+			Object.keys(commenterCounts).reduce((maxId, id) => {
+				return commenterCounts[id] > (commenterCounts[maxId] || 0) ? id : maxId;
+			}, ""),
+		[commenterCounts],
+	);
+
+	const mostActiveCommenterCount = commenterCounts[mostActiveCommenterId] || 0;
+
+	const groupMetrics: IGroupMetrics & {
 		loading: boolean;
 		error: string | null;
 	} = {
-		threads: groupMetricsState.threads,
-		votes: groupMetricsState.votes,
-		comments: groupMetricsState.comments,
+		threads: threads,
+		votes: votes,
+		comments: comments,
 		activeMembers,
 		pulseScore,
 		heatmap,
@@ -138,6 +198,14 @@ export function useGroupMetrics(
 		recentComments,
 		loading,
 		error,
+		heatmapData,
+		voteDistribution,
+		avgVotesPerThread,
+		topVotedThread,
+		totalComments,
+		mostActiveCommenterId,
+		mostActiveCommenterCount,
+		totalVotes,
 	};
 
 	return groupMetrics;
