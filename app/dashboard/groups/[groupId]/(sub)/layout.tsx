@@ -1,5 +1,5 @@
 "use client";
-import { OrganizationSidePanel } from "../../components";
+import { OrganizationSidePanel } from "@/components/OgranizationSidePanel";
 
 const GroupLayout = ({ children }: { children: React.ReactNode }) => {
 	return (

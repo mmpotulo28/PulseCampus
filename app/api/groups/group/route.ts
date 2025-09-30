@@ -73,6 +73,7 @@ export async function PUT(req: NextRequest) {
 		return NextResponse.json({ message: "Group updated successfully." });
 	} catch (error) {
 		console.error("Error updating group:", error);
+
 		return NextResponse.json({ error: "Failed to update group." }, { status: 500 });
 	}
 }

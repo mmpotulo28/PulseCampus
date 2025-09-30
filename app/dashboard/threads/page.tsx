@@ -4,10 +4,10 @@ import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/solid";
 import { Spinner, Card, Chip, Button } from "@heroui/react";
 import { useMemo } from "react";
 import { FolderOpenIcon, LockClosedIcon, NumberedListIcon } from "@heroicons/react/24/outline";
-import { OrganizationSidePanel } from "../groups/components";
 import { useThreads } from "@/hooks/useThreads";
 import ThreadCard from "@/components/ThreadCard";
 import { PlusCircleIcon } from "lucide-react";
+import { OrganizationSidePanel } from "@/components/OgranizationSidePanel";
 
 // Thread Stats Header
 function ThreadsStatsHeader({ threads }: { threads: any[] }) {

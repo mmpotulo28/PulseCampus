@@ -17,13 +17,12 @@ import {
 } from "@heroui/react";
 import { CalendarDate, Time } from "@internationalized/date";
 
-import { OrganizationSidePanel } from "../../groups/components";
-
 import { useThreads } from "@/hooks/useThreads";
 import { useGroup } from "@/hooks/useGroup";
 import { useNominations } from "@/hooks/useNominations";
 import { INomination } from "@/types";
 import { usePermissions } from "@/hooks/usePermissions";
+import { OrganizationSidePanel } from "@/components/OgranizationSidePanel";
 
 export default function CreateThreadPage() {
 	const [title, setTitle] = useState("");

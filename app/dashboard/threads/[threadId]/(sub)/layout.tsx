@@ -1,6 +1,6 @@
 "use client";
 
-import { OrganizationSidePanel } from "@/app/dashboard/groups/components";
+import { OrganizationSidePanel } from "@/components/OgranizationSidePanel";
 
 export default function ThreadLayout({ children }: { children: React.ReactNode }) {
 	return (

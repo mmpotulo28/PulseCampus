@@ -2,11 +2,12 @@
 import { useState } from "react";
 import { useOrganization } from "@clerk/nextjs";
 
-import { CreateGroupForm, OrganizationSidePanel } from "../components";
+import { CreateGroupForm } from "../components";
 import { InviteUsersToGroup } from "../components";
 
 import { usePermissions } from "@/hooks/usePermissions";
 import { useGroup } from "@/hooks/useGroup";
+import { OrganizationSidePanel } from "@/components/OgranizationSidePanel";
 
 export default function CreateGroupPage() {
 	const [name, setName] = useState("");

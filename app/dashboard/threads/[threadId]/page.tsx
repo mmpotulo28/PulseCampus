@@ -6,8 +6,6 @@ import { button as buttonStyles } from "@heroui/theme";
 import { useUser } from "@clerk/nextjs";
 import { useEffect } from "react";
 
-import { OrganizationSidePanel } from "../../groups/components";
-
 import { useThreads } from "@/hooks/useThreads";
 import { useComments } from "@/hooks/useComments";
 import { useVoting } from "@/hooks/useVoting";
@@ -17,6 +15,7 @@ import CommentsSection from "@/components/threads/CommentsSection";
 import InsightsPanel from "@/components/threads/InsightsPanel";
 import { useNominations } from "@/hooks/useNominations";
 import Loading from "@/app/loading";
+import { OrganizationSidePanel } from "@/components/OgranizationSidePanel";
 
 export default function ThreadDetailsPage() {
 	const { threadId } = useParams();

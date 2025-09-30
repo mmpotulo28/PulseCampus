@@ -32,7 +32,7 @@ export function useThreads(groupId?: string): IUseThreads {
 		error: threadsError,
 		isLoading: threadsLoading,
 		mutate: fetchThreads,
-	} = useSWR(`/api/threads`, threadsFetcher);
+	} = useSWR(groupId ? `/api/threads?group_id=${groupId}` : `/api/threads`, threadsFetcher);
 
 	const getThread = useCallback(async (threadId: string) => {
 		setThreadLoading(true);

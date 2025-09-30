@@ -121,6 +121,7 @@ export function useGroup() {
 				group_id: groupId,
 				user_ids: userIds,
 			});
+
 			setInviteSuccess(data.message || "Users invited successfully.");
 		} catch (err: any) {
 			setInviteError(err.response?.data?.error || "Failed to invite users.");
