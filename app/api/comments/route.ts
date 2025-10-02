@@ -28,6 +28,7 @@ export async function GET(req: NextRequest) {
 			where: { threadId: threadId },
 			orderBy: { createdAt: "desc" },
 		});
+
 		return NextResponse.json({ comments });
 	} catch (error: any) {
 		return NextResponse.json({ error: error.message }, { status: 500 });
@@ -65,6 +66,7 @@ export async function POST(req: NextRequest) {
 				createdAt: new Date(),
 			},
 		});
+
 		return NextResponse.json({ message: "Comment added successfully" });
 	} catch (error: any) {
 		return NextResponse.json({ error: error.message }, { status: 500 });

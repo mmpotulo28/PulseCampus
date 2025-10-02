@@ -28,6 +28,7 @@ export async function GET(req: NextRequest) {
 			where: { threadId: threadId },
 			orderBy: { createdAt: "desc" },
 		});
+
 		return NextResponse.json({ votes });
 	} catch (error: any) {
 		return NextResponse.json({ error: error.message }, { status: 500 });
