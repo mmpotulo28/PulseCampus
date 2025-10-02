@@ -29,8 +29,7 @@ export function useVoting({
 		agreement: 0,
 		engagement: 0,
 		reached: false,
-		yesVotes: 0,
-		noVotes: 0,
+		voteCounts: { yes: 0, no: 0 },
 		totalVotes: 0,
 	});
 
@@ -129,8 +128,7 @@ export function useVoting({
 			agreement,
 			engagement,
 			reached,
-			yesVotes,
-			noVotes,
+			voteCounts: { yes: yesVotes, no: noVotes },
 			totalVotes,
 		});
 	}, [votes?.voteCounts, threadId, votes.votes, voteOptions.length]);

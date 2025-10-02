@@ -1,6 +1,7 @@
 import { Card, Button } from "@heroui/react";
 import { ChartBarIcon } from "@heroicons/react/24/outline";
 import React from "react";
+import { INomination } from "@/types";
 
 export default function ThreadTopNomineesCard({
 	topNominees,
@@ -9,12 +10,12 @@ export default function ThreadTopNomineesCard({
 	winningNominee,
 	onViewNominee,
 }: {
-	topNominees: { option: string; count: number }[];
+	topNominees: INomination[];
 	consensus: any;
 	thread: any;
-	winningNominee: string | null;
+	winningNominee?: INomination;
 	// eslint-disable-next-line no-unused-vars
-	onViewNominee: (nominee: any) => void;
+	onViewNominee: (nominee: INomination) => void;
 }) {
 	return (
 		<Card className="mb-6 p-6 rounded-xl shadow bg-gradient-to-br from-warning/10 to-background/80 border-0">
@@ -27,7 +28,7 @@ export default function ThreadTopNomineesCard({
 				) : (
 					topNominees.map((n, idx) => {
 						const total = consensus.totalVotes || 1;
-						const percent = ((n.count / total) * 100).toFixed(1);
+						const percent = (((n.votes || 0) / total) * 100).toFixed(1);
 						let badge = null;
 
 						if (idx === 0)
@@ -53,7 +54,7 @@ export default function ThreadTopNomineesCard({
 
 						return (
 							<div
-								key={n.option}
+								key={n.id}
 								className={`flex flex-col gap-1 p-3 rounded-lg border ${
 									idx === 0
 										? "border-success/40 bg-success/5"
@@ -64,11 +65,11 @@ export default function ThreadTopNomineesCard({
 												: "border-default-200"
 								}`}>
 								<div className="flex items-center gap-2">
-									<span className="font-bold text-lg">{n.option}</span>
+									<span className="font-bold text-lg">{n.name}</span>
 									{badge}
 								</div>
 								<div className="flex items-center gap-2 text-xs text-default-500">
-									<span>Votes: {n.count}</span>
+									<span>Votes: {n.votes || 0}</span>
 									<span>({percent}%)</span>
 								</div>
 								<div className="w-full h-2 bg-default-100 rounded-full mt-1">
@@ -102,7 +103,7 @@ export default function ThreadTopNomineesCard({
 			{thread.status?.toLowerCase() === "closed" && winningNominee && (
 				<div className="mt-6 text-success font-bold text-md flex items-center gap-2">
 					🏆 Winning Nominee:{" "}
-					<span className="px-2 py-1 rounded bg-success/20">{winningNominee}</span>
+					<span className="px-2 py-1 rounded bg-success/20">{winningNominee.name}</span>
 				</div>
 			)}
 		</Card>

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-
 import { getAuth } from "@clerk/nextjs/server";
 import redis from "@/lib/config/redis";
 import { prisma } from "@/lib/db";
+import { IConsensus, IThreadMetrics, IVote, IComment, INomination } from "@/types";
+import { calculateMCQConsensus, calculateYNConsensus } from "@/lib/helpers";
 
 const CACHE_DURATION = 300; // Cache duration in seconds (5 minutes)
 
@@ -37,7 +38,7 @@ export async function GET(req: NextRequest) {
 			return NextResponse.json(JSON.parse(cachedResponse));
 		}
 
-		// Fetch data from Supabase
+		// Fetch data from Prisma
 		const [thread, votes, comments, nominations] = await Promise.all([
 			prisma.threads.findUnique({ where: { id: threadId } }),
 			prisma.votes.findMany({ where: { threadId: threadId } }),
@@ -47,55 +48,66 @@ export async function GET(req: NextRequest) {
 
 		if (!thread) {
 			return NextResponse.json({ error: "Thread not found" }, { status: 404 });
-		} else if (!votes) {
-			return NextResponse.json({ error: "Votes not found" }, { status: 404 });
-		} else if (!comments) {
-			return NextResponse.json({ error: "Comments not found" }, { status: 404 });
-		} else if (!nominations) {
-			return NextResponse.json({ error: "Nominations not found" }, { status: 404 });
 		}
 
-		const consensus =
-			thread.voteType === "mcq"
-				? nominations.map((nom) => ({
-						nominee: nom.name,
-						voteCount: votes.filter((v) => v.vote === nom.id).length,
-					}))
-				: null;
+		let consensus: IConsensus;
 
-		const recentVotes = votes
+		if (thread.voteType === "mcq") {
+			consensus = calculateMCQConsensus(votes, nominations);
+		} else {
+			consensus = calculateYNConsensus(votes, nominations);
+		}
+
+		const recentVotes: IVote[] = votes
 			.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
 			.slice(0, 5);
 
-		const recentComments = comments
+		const recentComments: IComment[] = comments
 			.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
 			.slice(0, 5);
 
-		const topNominees =
-			thread.voteType === "mcq"
-				? nominations
-						.map((nom) => ({
-							nominee: nom.name,
-							voteCount: votes.filter((v) => v.vote === nom.id).length,
-						}))
-						.sort((a, b) => b.voteCount - a.voteCount)
-						.slice(0, 5)
-				: null;
+		const uniqueCommenters = [...new Map(comments.map((c) => [c.userId, c])).values()];
+
+		const uniqueVoters = [...new Map(votes.map((v) => [v.userId, v])).values()];
+
+		let topNominees: INomination[] | undefined = undefined;
+		let winningNominee: INomination | undefined = undefined;
+
+		if (thread.voteType === "mcq") {
+			const nomineeVotes = nominations.map((nom) => ({
+				nominee: nom,
+				voteCount: votes.filter((v) => v.vote === nom.id).length,
+			}));
+
+			topNominees = nomineeVotes
+				.sort((a, b) => b.voteCount - a.voteCount)
+				.slice(0, 5)
+				.map((nv) => nv.nominee);
+
+			winningNominee =
+				nomineeVotes.length > 0
+					? nomineeVotes.reduce((prev, curr) =>
+							curr.voteCount > prev.voteCount ? curr : prev,
+						).nominee
+					: undefined;
+		}
+
+		const metrics: IThreadMetrics = {
+			totalVotes: votes.length,
+			totalComments: comments.length,
+			consensus,
+			recentVotes,
+			recentComments,
+			uniqueCommenters,
+			uniqueVoters,
+			totalNominations: nominations.length,
+			topNominees,
+			winningNominee,
+		};
 
 		const responseData = {
 			thread,
-			metrics: {
-				totalVotes: votes.length,
-				totalComments: comments.length,
-				totalNominations: nominations.length,
-				consensus,
-				recentVotes,
-				recentComments,
-				topNominees: topNominees,
-			},
-			votes,
-			comments,
-			nominations,
+			metrics,
 		};
 
 		// Cache the response in Redis

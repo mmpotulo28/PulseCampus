@@ -1,3 +1,4 @@
+import { IComment, IVote } from "@/types";
 import { Card } from "@heroui/react";
 import { MessageCircleMore, Vote } from "lucide-react";
 
@@ -5,8 +6,8 @@ export default function ThreadRecentActivityGrid({
 	recentVotes,
 	recentComments,
 }: {
-	recentVotes: any[];
-	recentComments: any[];
+	recentVotes: IVote[];
+	recentComments: IComment[];
 }) {
 	return (
 		<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">

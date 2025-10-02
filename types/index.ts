@@ -54,6 +54,7 @@ export interface INomination {
 	name: string;
 	threadId: string;
 	userId: string;
+	votes?: number;
 }
 
 export interface IVote {
@@ -62,8 +63,8 @@ export interface IVote {
 	threadId: string;
 	vote: string;
 	weight: number;
-	createdAt?: Date;
-	updatedAt?: Date;
+	createdAt: Date | null;
+	updatedAt: Date | null;
 }
 
 export interface IVoteOption {
@@ -87,8 +88,7 @@ export interface IConsensus {
 	agreement: number;
 	engagement: number;
 	reached: boolean;
-	yesVotes: number;
-	noVotes: number;
+	voteCounts: Record<string, number>;
 	totalVotes: number;
 }
 
@@ -138,4 +138,17 @@ export interface IUseThreads {
 	threadLoading: boolean;
 	threadError: string | null;
 	getThread: (threadId: string) => Promise<void>;
+}
+
+export interface IThreadMetrics {
+	totalVotes: number;
+	totalComments: number;
+	consensus: IConsensus;
+	recentVotes: IVote[];
+	recentComments: IComment[];
+	uniqueCommenters: any[];
+	uniqueVoters: any[];
+	totalNominations?: number;
+	topNominees?: INomination[];
+	winningNominee?: INomination;
 }

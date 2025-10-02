@@ -11,18 +11,7 @@ import NomineeProfileModal from "@/components/threads/metrics/NomineeProfileModa
 
 export default function ThreadMetricsPage() {
 	const { threadId } = useParams();
-	const metrics = useThreadMetrics(threadId as string);
-
-	const {
-		thread,
-		loading,
-		error,
-		consensus,
-		recentComments,
-		recentVotes,
-		topNominees,
-		winningNominee,
-	} = metrics;
+	const { metrics, thread, loading, error } = useThreadMetrics(threadId as string);
 
 	const [selectedNominee, setSelectedNominee] = useState<any | null>(null);
 	const [modalOpen, setModalOpen] = useState(false);
@@ -43,15 +32,18 @@ export default function ThreadMetricsPage() {
 		<section className="px-2 md:px-4 max-w-7xl mx-auto">
 			<ThreadMetricsHeader thread={thread} />
 			<ThreadMetricsGrid metrics={metrics} />
-			<ThreadConsensusCard consensus={consensus} />
-			<ThreadRecentActivityGrid recentVotes={recentVotes} recentComments={recentComments} />
+			<ThreadConsensusCard consensus={metrics?.consensus} />
+			<ThreadRecentActivityGrid
+				recentVotes={metrics?.recentVotes || []}
+				recentComments={metrics?.recentComments || []}
+			/>
 			{thread?.voteType === "mcq" && (
 				<>
 					<ThreadTopNomineesCard
-						topNominees={topNominees}
-						consensus={consensus}
+						topNominees={metrics?.topNominees || []}
+						consensus={metrics?.consensus}
 						thread={thread}
-						winningNominee={winningNominee}
+						winningNominee={metrics?.winningNominee}
 						onViewNominee={handleViewNominee}
 					/>
 					{selectedNominee && (
