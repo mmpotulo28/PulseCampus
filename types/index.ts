@@ -5,54 +5,77 @@ export type IconSvgProps = SVGProps<SVGSVGElement> & {
 	size?: number;
 };
 
-export interface IGroup {
-	id: string;
-	org_id: string; // Organization ID
+export interface IGroupMember {
 	name: string;
-	description?: string;
-	members?: number;
-	is_public?: boolean;
-	activity?: number;
-	created_at?: string;
-	owner?: string;
-	membersList?: { name: string; role: string }[];
+	role: string;
+	userId: string;
+}
+
+export interface IGroup {
+	id?: string;
+	orgId: string;
+	name: string;
+	description: string;
+	members: number;
+	membersList: IGroupMember[];
+	isPublic: boolean;
+	activity: number;
+	createdAt: Date;
+	owner: string;
 }
 
 export interface IThread {
-	id: string;
-	group_id: string; // Group ID
-	creator_id?: string;
+	id?: string;
+	groupId: string;
+	creatorId: string;
 	title: string;
-	description?: string;
-	status?: string;
-	created_at?: string;
-	deadline?: string;
-	votes?: Record<string, number>;
-	totalMembers?: number;
-	comments?: { userId: string; text: string }[];
-	voteOptions?: IVoteOption[]; // MCQ support
-	vote_type?: "yesno" | "mcq";
+	description: string;
+	status: string;
+	createdAt: Date;
+	deadline: string;
+	totalMembers: number;
+	voteType: string;
 }
+
+export interface IComment {
+	id?: string;
+	createdAt: Date;
+	name: string;
+	text: string;
+	threadId: string;
+	userId: string;
+}
+
+export interface INomination {
+	id?: string;
+	createdAt: Date;
+	email: string;
+	label: string;
+	name: string;
+	threadId: string;
+	userId: string;
+}
+
+export interface IVote {
+	id?: string;
+	userId: string;
+	threadId: string;
+	vote: string;
+	weight: number;
+	createdAt: Date;
+	updatedAt?: Date;
+}
+
 export interface IVoteOption {
 	id: string;
 	label: string;
 }
 
 export interface IUseVotingOptions {
-	thread_id: string;
+	threadId: string;
 	options?: IVoteOption[];
 	anonymous?: boolean;
 	weighted?: boolean;
-}
-
-export interface IVote {
-	id?: string;
-	thread_id: string;
-	user_id: string | null;
-	vote: string | string[]; // MCQ support
-	weight: number;
-	created_at?: string;
-	updated_at?: string;
 }
 
 export interface IVoteWithCounts {
@@ -67,26 +90,6 @@ export interface IConsensus {
 	yesVotes: number;
 	noVotes: number;
 	totalVotes: number;
-}
-
-export interface IComment {
-	id: string;
-	thread_id: string;
-	user_id: string;
-	name: string;
-	text: string;
-	created_at?: string;
-}
-
-export interface INomination {
-	id: string;
-	thread_id: string;
-	name: string;
-	user_id: string;
-	email: string;
-	label: string;
-	key: string;
-	created_at?: string;
 }
 
 export interface iUseCache {
@@ -123,12 +126,7 @@ export interface IUseThreads {
 	threads: IThread[];
 	threadsLoading: boolean;
 	threadsError: string | null;
-	createThread: (
-		title: string,
-		description: string,
-		voteType: "yesno" | "mcq",
-		deadline?: string,
-	) => Promise<void>;
+	createThread: (arg0: IThread) => Promise<void>;
 	createLoading: boolean;
 	createError: string | null;
 	createSuccess: string | null;

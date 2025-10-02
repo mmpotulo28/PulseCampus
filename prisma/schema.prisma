@@ -8,94 +8,65 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-type GroupsThreads {
-  deadline     String
-  description  String
-  id           String
-  status       String
-  title        String
-  totalMembers Int
-  voteType     String
+type GroupsMembersList {
+  name   String
+  role   String
+  userId String
 }
 
-type ThreadsComments {
+model comments {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   createdAt DateTime @db.Date
-  id        String
   name      String
   text      String
+  threadId  String   @db.ObjectId
   userId    String
-}
-
-type ThreadsNominations {
-  createdAt DateTime @db.Date
-  email     String
-  id        String
-  label     String
-  name      String
-  userId    String
-}
-
-type ThreadsVotes {
-  createdAt DateTime @db.Date
-  id        String
-  userId    String
-  vote      String
-  weight    Float
-}
-
-model comments_threads_comments_Cache {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  @@map("_comments-threads-comments-Cache")
-}
-
-model nominations_threads_nominations_Cache {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-
-  @@map("_nominations-threads-nominations-Cache")
-}
-
-model threads_groups_threads_Cache {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-
-  @@map("_threads-groups-threads-Cache")
-}
-
-model votes_threads_votes_Cache {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-
-  @@map("_votes-threads-votes-Cache")
 }
 
 /// This collection uses a JSON Schema defined in the database, which requires additional setup for migrations. Visit https://pris.ly/d/mongodb-json-schema for more info.
 model groups {
-  id          String          @id @default(auto()) @map("_id") @db.ObjectId
+  id          String              @id @default(auto()) @map("_id") @db.ObjectId
   activity    Int
-  createdAt   DateTime        @db.Date
+  createdAt   DateTime            @db.Date
   description String
-  id_         String          @unique(map: "_RM_id") @map("id")
   isPublic    Boolean
   members     Int
+  membersList GroupsMembersList[]
   name        String
   orgId       String
   owner       String
-  threads     GroupsThreads[]
+}
+
+model nominations {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime @db.Date
+  email     String
+  label     String
+  name      String
+  threadId  String   @db.ObjectId
+  userId    String
 }
 
 /// This collection uses a JSON Schema defined in the database, which requires additional setup for migrations. Visit https://pris.ly/d/mongodb-json-schema for more info.
 model threads {
-  id           String               @id @default(auto()) @map("_id") @db.ObjectId
-  comments     ThreadsComments[]
-  createdAt    DateTime             @db.Date
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt    DateTime @db.Date
   creatorId    String
-  deadline     DateTime             @db.Date
+  deadline     String
   description  String
-  groupId      String
-  /// Field referred in an index, but found no data to define the type.
-  id_          Json?                @unique(map: "_RM_id") @map("id")
-  nominations  ThreadsNominations[]
+  groupId      String   @db.ObjectId
   status       String
   title        String
   totalMembers Int
   voteType     String
-  votes        ThreadsVotes[]
+}
+
+model votes {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String
+  threadId  String   @db.ObjectId
+  vote      String
+  weight    Int
+  createdAt DateTime @db.Date
+  updatedAt DateTime? @db.Date
 }
