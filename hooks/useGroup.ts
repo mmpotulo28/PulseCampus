@@ -21,7 +21,7 @@ export function useGroup() {
 		isLoading: groupsLoading,
 		mutate: mutateGroups,
 	} = useSWR(
-		organization?.id ? [`/api/groups`, { org_id: organization.id }] : null,
+		organization?.id ? [`/api/groups`, { orgId: organization.id }] : null,
 		([url, params]) => groupsFetcher(url, params),
 	);
 
@@ -45,7 +45,7 @@ export function useGroup() {
 				return;
 			}
 			const { data } = await axios.get(`/api/groups/group`, {
-				params: { group_id: groupId },
+				params: { groupId: groupId },
 			});
 
 			setGroup(data.group || null);
@@ -93,7 +93,7 @@ export function useGroup() {
 
 			try {
 				await axios.delete(`/api/groups`, {
-					params: { group_id: groupId },
+					params: { groupId: groupId },
 				});
 				setDeleteSuccess("Group deleted successfully.");
 				await mutateGroups(); // Revalidate groups after deletion
@@ -118,8 +118,8 @@ export function useGroup() {
 
 		try {
 			const { data } = await axios.post(`/api/groups/group/invite`, {
-				group_id: groupId,
-				user_ids: userIds,
+				groupId: groupId,
+				userIds: userIds,
 			});
 
 			setInviteSuccess(data.message || "Users invited successfully.");
@@ -143,7 +143,7 @@ export function useGroup() {
 
 			try {
 				await axios.put(`/api/groups/group`, updates, {
-					params: { group_id: groupId },
+					params: { groupId: groupId },
 				});
 				setUpdateSuccess("Group updated successfully.");
 				await mutateGroups(); // Revalidate groups after update

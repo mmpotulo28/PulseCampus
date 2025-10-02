@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import supabase from "@/lib/db";
+
 import { getAuth } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
 	const auth = getAuth(req);
@@ -17,24 +18,24 @@ export async function GET(req: NextRequest) {
 	}
 
 	const { searchParams } = new URL(req.url);
-	const user_id = searchParams.get("user_id");
+	const userId = searchParams.get("userId");
 
-	if (!user_id) {
+	if (!userId) {
 		return NextResponse.json({ error: "User ID is required" }, { status: 400 });
 	}
 
 	try {
-		const { data: groups, error } = await supabase.from("groups").select("*");
+		const groups = await prisma.groups.findMany();
 
-		if (error) {
-			throw new Error(error.message);
+		if (!groups) {
+			throw new Error("Failed to fetch groups, no groups found.");
 		}
 
-		// Filter groups where the user is in the members_list
+		// Filter groups where the user is in the membersList
 		const userGroups = groups.filter((group) => {
-			const members = JSON.parse(group.members_list || "[]");
+			const members = group.membersList;
 
-			return members.some((member: { name: string }) => member.name === user_id);
+			return members.some((member: { name: string }) => member.name === userId);
 		});
 
 		return NextResponse.json({ groups: userGroups });

@@ -22,10 +22,10 @@ export default function ThreadRecentActivityGrid({
 							<li
 								key={v.id}
 								className="flex items-center gap-2 text-xs text-default-400">
-								<span className="font-bold">{v.user_id}:</span>
+								<span className="font-bold">{v.userId}:</span>
 								<span>{Array.isArray(v.vote) ? v.vote.join(", ") : v.vote}</span>
 								<span className="ml-auto">
-									{v.created_at ? new Date(v.created_at).toLocaleString() : ""}
+									{v.createdAt ? new Date(v.createdAt).toLocaleString() : ""}
 								</span>
 							</li>
 						))
@@ -44,10 +44,10 @@ export default function ThreadRecentActivityGrid({
 							<li
 								key={c.id}
 								className="flex items-center gap-2 text-xs text-default-400">
-								<span className="font-bold">{c.name || c.user_id}:</span>
+								<span className="font-bold">{c.name || c.userId}:</span>
 								<span>{c.text.slice(0, 40)}...</span>
 								<span className="ml-auto">
-									{c.created_at ? new Date(c.created_at).toLocaleString() : ""}
+									{c.createdAt ? new Date(c.createdAt).toLocaleString() : ""}
 								</span>
 							</li>
 						))

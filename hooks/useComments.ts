@@ -25,7 +25,7 @@ export function useComments(threadId: string) {
 
 		try {
 			const { data } = await axios.get(`/api/comments`, {
-				params: { thread_id: threadId },
+				params: { threadId: threadId },
 			});
 
 			setComments(data.comments || []);
@@ -54,7 +54,7 @@ export function useComments(threadId: string) {
 				}
 
 				const { data } = await axios.post("/api/comments", {
-					thread_id: threadId,
+					threadId: threadId,
 					text,
 					name,
 				});

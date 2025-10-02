@@ -35,7 +35,7 @@ export default function EditGroupPage() {
 		if (group) {
 			setName(group.name || "");
 			setDesc(group.description || "");
-			setIsPublic(group.is_public ?? true);
+			setIsPublic(group.isPublic ?? true);
 			setActivity(group.activity ?? 0);
 		}
 	}, [group]);
@@ -46,7 +46,7 @@ export default function EditGroupPage() {
 		await updateGroup(groupId as string, {
 			name,
 			description: desc,
-			is_public: isPublic,
+			isPublic: isPublic,
 			activity,
 		});
 	};

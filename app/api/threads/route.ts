@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import supabase from "@/lib/db";
 import { getAuth } from "@clerk/nextjs/server";
 import redis from "@/lib/config/redis";
+import { prisma } from "@/lib/db";
 
 const CACHE_DURATION = 300; // Cache duration in seconds (5 minutes)
 
@@ -20,9 +20,9 @@ export async function GET(req: NextRequest) {
 	}
 
 	const { searchParams } = new URL(req.url);
-	const group_id = searchParams.get("group_id");
+	const groupId = searchParams.get("groupId");
 
-	const cacheKey = group_id ? `threads_${group_id}` : "threads_all";
+	const cacheKey = groupId ? `threads_${groupId}` : "threads_all";
 
 	try {
 		// Check Redis cache
@@ -32,24 +32,24 @@ export async function GET(req: NextRequest) {
 			return NextResponse.json(JSON.parse(cachedResponse));
 		}
 
-		// Fetch data from Supabase
-		let query = supabase.from("threads").select("*");
+		let threads;
 
-		if (group_id) {
-			query = query.eq("group_id", group_id);
-		}
-
-		const { data, error } = await query;
-
-		if (error) {
-			return NextResponse.json({ error: error.message }, { status: 500 });
+		if (groupId) {
+			threads = await prisma.threads.findMany({
+				where: { groupId: groupId },
+				orderBy: { createdAt: "desc" },
+			});
+		} else {
+			threads = await prisma.threads.findMany({
+				orderBy: { createdAt: "desc" },
+			});
 		}
 
 		// Cache the response in Redis
-		await redis.set(cacheKey, JSON.stringify({ threads: data }), "EX", CACHE_DURATION);
+		await redis.set(cacheKey, JSON.stringify({ threads }), "EX", CACHE_DURATION);
 
-		return NextResponse.json({ threads: data });
-	} catch (err) {
+		return NextResponse.json({ threads });
+	} catch (err: any) {
 		console.error("Error fetching threads:", err);
 
 		return NextResponse.json({ error: "Error fetching threads" }, { status: 500 });
@@ -71,42 +71,44 @@ export async function POST(req: NextRequest) {
 	}
 
 	const body = await req.json();
-	const { group_id, title, description, vote_type, deadline } = body;
+	const { groupId, title, description, voteType, deadline } = body;
 
-	if (!group_id || !title || !description || !vote_type || !deadline) {
+	if (!groupId || !title || !description || !voteType || !deadline) {
 		return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
 	}
 
-	const payload = {
-		group_id,
-		creator_id: auth.userId,
-		title,
-		description,
-		status: "Open",
-		total_members: 1,
-		vote_type,
-		deadline,
-	};
+	try {
+		const thread = await prisma.threads.create({
+			data: {
+				groupId: groupId,
+				creatorId: auth.userId,
+				title,
+				description,
+				status: "Open",
+				totalMembers: 1,
+				voteType: voteType,
+				deadline,
+				createdAt: new Date(),
+			},
+			select: { id: true },
+		});
 
-	const { data, error } = await supabase.from("threads").insert([payload]).select("id");
+		// Invalidate cache for threads
+		const cacheKey = groupId ? `threads_${groupId}` : "threads_all";
 
-	if (error) {
+		await redis.del(cacheKey);
+
+		return NextResponse.json({ threadId: thread.id });
+	} catch (error: any) {
 		return NextResponse.json({ error: error.message }, { status: 500 });
 	}
-
-	// Invalidate cache for threads
-	const cacheKey = group_id ? `threads_${group_id}` : "threads_all";
-
-	await redis.del(cacheKey);
-
-	return NextResponse.json({ threadId: data[0].id });
 }
 
 export async function DELETE(req: NextRequest) {
 	const auth = getAuth(req);
 
 	if (!auth || !auth.userId) {
-		return Response.json(
+		return NextResponse.json(
 			{
 				error: true,
 				message: "Unauthorized: You must be signed in to access this resource.",
@@ -116,20 +118,29 @@ export async function DELETE(req: NextRequest) {
 		);
 	}
 	const { searchParams } = new URL(req.url);
-	const thread_id = searchParams.get("thread_id");
+	const threadId = searchParams.get("threadId");
 
-	if (!thread_id) {
+	if (!threadId) {
 		return NextResponse.json({ error: "Thread ID is required" }, { status: 400 });
 	}
 
-	const { error } = await supabase.from("threads").delete().eq("id", thread_id);
+	try {
+		// Find thread to get groupId for cache invalidation
+		const thread = await prisma.threads.findUnique({ where: { id: threadId } });
 
-	if (error) {
+		if (!thread) {
+			return NextResponse.json({ error: "Thread not found" }, { status: 404 });
+		}
+
+		await prisma.threads.delete({ where: { id: threadId } });
+
+		// Invalidate cache for threads
+		const cacheKey = thread.groupId ? `threads_${thread.groupId}` : "threads_all";
+
+		await redis.del(cacheKey);
+
+		return NextResponse.json({ message: "Thread deleted successfully" });
+	} catch (error: any) {
 		return NextResponse.json({ error: error.message }, { status: 500 });
 	}
-
-	// Invalidate cache for threads
-	await redis.del("threads_all");
-
-	return NextResponse.json({ message: "Thread deleted successfully" });
 }

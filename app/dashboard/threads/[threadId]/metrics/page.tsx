@@ -45,7 +45,7 @@ export default function ThreadMetricsPage() {
 			<ThreadMetricsGrid metrics={metrics} />
 			<ThreadConsensusCard consensus={consensus} />
 			<ThreadRecentActivityGrid recentVotes={recentVotes} recentComments={recentComments} />
-			{thread?.vote_type === "mcq" && (
+			{thread?.voteType === "mcq" && (
 				<>
 					<ThreadTopNomineesCard
 						topNominees={topNominees}

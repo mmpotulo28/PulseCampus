@@ -39,7 +39,7 @@ export default function ThreadCard({ thread, href }: ThreadCardProps) {
 				</Tooltip>
 				<Tooltip content="Vote type">
 					<span className="flex items-center gap-1 text-zinc-500 text-sm">
-						<Vote className="h-4 w-4" /> {thread.vote_type || "Unknown"}
+						<Vote className="h-4 w-4" /> {thread.voteType || "Unknown"}
 					</span>
 				</Tooltip>
 				<Tooltip content="Total members">

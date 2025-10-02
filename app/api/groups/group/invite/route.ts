@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import supabase from "@/lib/db";
+
 import { getAuth } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
 	const auth = getAuth(req);
@@ -17,19 +18,32 @@ export async function POST(req: NextRequest) {
 	}
 
 	const body = await req.json();
-	const { group_id, user_ids } = body;
+	const { groupId, userIds } = body;
 
-	if (!group_id || !Array.isArray(user_ids) || user_ids.length === 0) {
+	if (!groupId || !Array.isArray(userIds) || userIds.length === 0) {
 		return NextResponse.json({ error: "Group ID and user IDs are required." }, { status: 400 });
 	}
 
 	try {
-		const updates = user_ids.map((userId) => ({ group_id, user_id: userId }));
+		const updates = userIds.map((userId) => ({
+			groupId,
+			userId,
+			name: "Invited User", // Replace with actual name if available
+			role: "member", // Replace with actual role if needed
+		}));
 
-		const { error } = await supabase.from("group_members").upsert(updates);
+		const group = await prisma.groups.update({
+			where: { id: groupId },
+			data: {
+				membersList: {
+					push: updates,
+				},
+			},
+			select: { id: true },
+		});
 
-		if (error) {
-			return NextResponse.json({ error: error.message }, { status: 500 });
+		if (!group) {
+			return NextResponse.json({ error: "Group not found." }, { status: 404 });
 		}
 
 		return NextResponse.json({ message: "Users invited successfully." });

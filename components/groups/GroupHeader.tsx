@@ -23,7 +23,7 @@ export default function GroupHeader({ group }: { group: IGroup }) {
 				<div>
 					<h1 className="text-2xl font-bold">{group.name}</h1>
 					<div className="flex items-center gap-2 mt-1">
-						{group.is_public ? (
+						{group.isPublic ? (
 							<span className="flex items-center gap-1 text-success text-sm font-semibold">
 								<LockOpenIcon className="h-5 w-5" /> Public
 							</span>

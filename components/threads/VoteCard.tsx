@@ -27,7 +27,7 @@ export default function VoteCard({ thread, disabled = false }: VoteCardProps) {
 		votingCreateMessage,
 		votingCreateError,
 	} = useVoting({
-		thread_id: thread.id || "",
+		threadId: thread.id || "",
 		options: [
 			{ id: "yes", label: "Yes" },
 			{ id: "no", label: "No" },

@@ -21,7 +21,7 @@ export default function GroupSidePanel({ group }: { group: IGroup }) {
 				<div className="flex items-center gap-2">
 					<span className="font-semibold">Created:</span>
 					<span className="bg-background px-2 py-1 rounded text-xs font-mono border border-default-200">
-						{new Date(group.created_at || "").toLocaleDateString()}
+						{new Date(group.createdAt || "").toLocaleDateString()}
 					</span>
 				</div>
 				<div className="flex items-center gap-2">
@@ -33,7 +33,7 @@ export default function GroupSidePanel({ group }: { group: IGroup }) {
 				</div>
 				<div className="flex items-center gap-2">
 					<span className="font-semibold">Type:</span>
-					{group.is_public ? (
+					{group.isPublic ? (
 						<span className="flex items-center gap-1 text-success font-semibold">
 							<LockOpenIcon className="h-4 w-4" /> Public
 						</span>
@@ -92,7 +92,7 @@ export default function GroupSidePanel({ group }: { group: IGroup }) {
 				</span>
 				<span>
 					<LockOpenIcon className="h-4 w-4 text-primary inline mr-1" />
-					{group.is_public ? "Anyone can join this group." : "Invite only group."}
+					{group.isPublic ? "Anyone can join this group." : "Invite only group."}
 				</span>
 				<span>
 					For advanced branding or support,{" "}

@@ -26,12 +26,15 @@ export default function CreateGroupPage() {
 		if (name.length < 3 || desc.length < 10) return;
 		if (groups.some((g) => g.name.toLowerCase() === name.toLowerCase())) return;
 		await createGroup({
-			id: "",
-			org_id: organization?.id || "",
+			orgId: organization?.id || "",
 			name,
 			description: desc,
-			is_public: isPublic,
+			isPublic: isPublic,
 			activity,
+			owner: "",
+			members: 1,
+			createdAt: new Date(),
+			membersList: [],
 		});
 	};
 

@@ -15,7 +15,7 @@ function ThreadsStatsHeader({ threads }: { threads: any[] }) {
 	const open = threads?.filter((t) => t.status === "open").length;
 	const closed = threads?.filter((t) => t.status === "closed").length;
 	const lastActivity = useMemo(() => {
-		const dates = threads?.map((t) => new Date(t.updated_at || t.created_at));
+		const dates = threads?.map((t) => new Date(t.updated_at || t.createdAt));
 		const latest = new Date(Math.max(...dates.map((d) => d.getTime())));
 
 		return latest.toLocaleString();
@@ -92,30 +92,19 @@ function ThreadsBottomSection() {
 export default function ThreadsPage() {
 	const { threads, threadsLoading, threadsError } = useThreads();
 
-	// Example: add votesCount/commentsCount for demo (replace with real data if available)
-	const threadsWithCounts = useMemo(
-		() =>
-			threads?.map((t) => ({
-				...t,
-				votesCount: t.votes?.length || Math.floor(Math.random() * 20),
-				commentsCount: t.comments?.length || Math.floor(Math.random() * 10),
-			})),
-		[threads],
-	);
-
 	return (
 		<section className="max-w-7xl mx-auto">
 			<div className="flex flex-col md:flex-row gap-8">
 				{/* Main Content */}
 				<div className="flex-1">
-					<ThreadsStatsHeader threads={threadsWithCounts} />
+					<ThreadsStatsHeader threads={threads} />
 					<div className="flex flex-col w-full">
 						{threadsLoading && <Spinner className="m-auto my-8" />}
 						{threadsError && <div>Error loading threads</div>}
 					</div>
 
 					<div className="mb-6 flex flex-col gap-4">
-						{threadsWithCounts?.map((t) => (
+						{threads?.map((t) => (
 							<ThreadCard key={t.id} thread={t} href={`/dashboard/threads/${t.id}`} />
 						))}
 					</div>

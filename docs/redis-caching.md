@@ -106,14 +106,13 @@ The following code demonstrates how Redis caching is implemented in the `group m
 
 ```typescript
 import Redis from "ioredis";
-import supabase from "@/lib/db";
 
 const redis = new Redis();
 const CACHE_DURATION = 300; // Cache duration in seconds
 
 export async function GET(req) {
-	const group_id = req.query.group_id;
-	const cacheKey = `group_metrics_${group_id}`;
+	const groupId = req.query.groupId;
+	const cacheKey = `group_metrics_${groupId}`;
 
 	// Check Redis cache
 	const cachedResponse = await redis.get(cacheKey);
@@ -122,7 +121,7 @@ export async function GET(req) {
 	}
 
 	// Fetch data from Supabase
-	const data = await fetchGroupMetricsFromDatabase(group_id);
+	const data = await fetchGroupMetricsFromDatabase(groupId);
 
 	// Cache the response
 	await redis.set(cacheKey, JSON.stringify(data), "EX", CACHE_DURATION);
@@ -142,7 +141,7 @@ export async function GET(req) {
 2. Test the API endpoint and verify that data is cached by checking Redis:
     ```bash
     redis-cli
-    GET group_metrics_<group_id>
+    GET group_metrics_<groupId>
     ```
 
 ---

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import supabase from "@/lib/db";
 import { getAuth } from "@clerk/nextjs/server";
 import redis from "@/lib/config/redis";
+import { prisma } from "@/lib/db";
 
 const CACHE_DURATION = 60; // Cache duration in seconds (1 minute)
 
@@ -20,13 +20,13 @@ export async function GET(req: NextRequest) {
 	}
 
 	const { searchParams } = new URL(req.url);
-	const thread_id = searchParams.get("thread_id");
+	const threadId = searchParams.get("threadId");
 
-	if (!thread_id) {
+	if (!threadId) {
 		return NextResponse.json({ error: "Thread ID is required" }, { status: 400 });
 	}
 
-	const cacheKey = `thread_${thread_id}`;
+	const cacheKey = `thread_${threadId}`;
 
 	try {
 		// Check Redis cache
@@ -36,21 +36,19 @@ export async function GET(req: NextRequest) {
 			return NextResponse.json(JSON.parse(cachedResponse));
 		}
 
-		// Fetch data from Supabase
-		const { data, error } = await supabase
-			.from("threads")
-			.select("*")
-			.eq("id", thread_id)
-			.single();
+		// Fetch data from Prisma
+		const thread = await prisma.threads.findUnique({
+			where: { id: threadId },
+		});
 
-		if (error) {
-			return NextResponse.json({ error: error.message }, { status: 500 });
+		if (!thread) {
+			return NextResponse.json({ error: "Thread not found" }, { status: 404 });
 		}
 
 		// Cache the response in Redis
-		await redis.set(cacheKey, JSON.stringify({ thread: data }), "EX", CACHE_DURATION);
+		await redis.set(cacheKey, JSON.stringify({ thread }), "EX", CACHE_DURATION);
 
-		return NextResponse.json({ thread: data });
+		return NextResponse.json({ thread });
 	} catch (err) {
 		console.error("Error fetching thread:", err);
 

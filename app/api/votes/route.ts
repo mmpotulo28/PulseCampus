@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import supabase from "@/lib/db";
 import { getAuth } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
 	const auth = getAuth(req);
 
 	if (!auth || !auth.userId) {
-		return Response.json(
+		return NextResponse.json(
 			{
 				error: true,
 				message: "Unauthorized: You must be signed in to access this resource.",
@@ -17,26 +17,28 @@ export async function GET(req: NextRequest) {
 	}
 
 	const { searchParams } = new URL(req.url);
-	const thread_id = searchParams.get("thread_id");
+	const threadId = searchParams.get("threadId");
 
-	if (!thread_id) {
+	if (!threadId) {
 		return NextResponse.json({ error: "Thread ID is required" }, { status: 400 });
 	}
 
-	const { data, error } = await supabase.from("votes").select("*").eq("thread_id", thread_id);
-
-	if (error) {
+	try {
+		const votes = await prisma.votes.findMany({
+			where: { threadId: threadId },
+			orderBy: { createdAt: "desc" },
+		});
+		return NextResponse.json({ votes });
+	} catch (error: any) {
 		return NextResponse.json({ error: error.message }, { status: 500 });
 	}
-
-	return NextResponse.json({ votes: data });
 }
 
 export async function POST(req: NextRequest) {
 	const auth = getAuth(req);
 
 	if (!auth || !auth.userId) {
-		return Response.json(
+		return NextResponse.json(
 			{
 				error: true,
 				message: "Unauthorized: You must be signed in to access this resource.",
@@ -47,24 +49,43 @@ export async function POST(req: NextRequest) {
 	}
 
 	const body = await req.json();
-	const { thread_id, vote, weight } = body;
+	const { threadId, vote, weight } = body;
 
-	if (!thread_id || !vote) {
+	if (!threadId || !vote) {
 		return NextResponse.json({ error: "Thread ID and vote are required" }, { status: 400 });
 	}
 
-	const payload = {
-		thread_id,
-		user_id: auth.userId,
-		vote,
-		weight: weight || 1,
-	};
+	try {
+		const existingVote = await prisma.votes.findFirst({
+			where: {
+				threadId: threadId,
+				userId: auth.userId,
+			},
+		});
 
-	const { error } = await supabase.from("votes").upsert([payload]);
+		if (existingVote) {
+			await prisma.votes.update({
+				where: { id: existingVote.id },
+				data: {
+					vote,
+					weight: weight || 1,
+					updatedAt: new Date(),
+				},
+			});
+		} else {
+			await prisma.votes.create({
+				data: {
+					threadId: threadId,
+					userId: auth.userId,
+					vote,
+					weight: weight || 1,
+					createdAt: new Date(),
+				},
+			});
+		}
 
-	if (error) {
+		return NextResponse.json({ message: "Vote submitted successfully" });
+	} catch (error: any) {
 		return NextResponse.json({ error: error.message }, { status: 500 });
 	}
-
-	return NextResponse.json({ message: "Vote submitted successfully" });
 }

@@ -41,11 +41,10 @@ export default function InviteNomineePage() {
 			return;
 		}
 		await addNomination({
-			key: "",
 			id: "",
-			thread_id: threadId as string,
+			threadId: threadId as string,
 			name,
-			user_id: "",
+			userId: "",
 			email,
 			label: name,
 		});

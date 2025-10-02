@@ -33,7 +33,7 @@ export default function GroupCard({ group, href }: GroupCardProps) {
 					<UserGroupIcon className="h-7 w-7 text-primary" />
 					<h3 className="font-semibold text-lg text-nowrap truncate">{group.name}</h3>
 				</div>
-				{group.is_public ? (
+				{group.isPublic ? (
 					<span className="flex items-center gap-1 text-success text-xs font-semibold ml-2">
 						<LockOpenIcon className="h-4 w-4" /> Public
 					</span>

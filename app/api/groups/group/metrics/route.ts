@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import supabase from "@/lib/db";
+
 import { getAuth } from "@clerk/nextjs/server";
 import redis from "@/lib/config/redis";
+import { prisma } from "@/lib/db";
+import { IThread } from "@/types";
 
 const CACHE_DURATION = 300; // Cache duration in seconds (5 minutes)
 
@@ -20,13 +22,13 @@ export async function GET(req: NextRequest) {
 	}
 
 	const { searchParams } = new URL(req.url);
-	const group_id = searchParams.get("group_id");
+	const groupId = searchParams.get("groupId");
 
-	if (!group_id) {
+	if (!groupId) {
 		return NextResponse.json({ error: "Group ID is required" }, { status: 400 });
 	}
 
-	const cacheKey = `group_metrics_${group_id}`;
+	const cacheKey = `group_metrics_${groupId}`;
 
 	try {
 		// Check Redis cache
@@ -37,29 +39,53 @@ export async function GET(req: NextRequest) {
 		}
 
 		// Fetch data from Supabase
-		const { data: threads, error: threadsError } = await supabase
-			.from("threads")
-			.select("*")
-			.eq("group_id", group_id);
+		const threads = await prisma.threads.findMany({
+			where: {
+				groupId: groupId,
+			},
+		});
 
-		if (threadsError) {
-			return NextResponse.json({ error: threadsError.message }, { status: 500 });
+		if (!threads) {
+			return NextResponse.json(
+				{ error: "Failed to retrieve threads, no threads found" },
+				{ status: 500 },
+			);
 		}
 
-		const threadIds = threads?.map((thread) => thread.id);
+		const threadIds = threads
+			.map((thread: IThread) => thread.id)
+			.filter((id): id is string => typeof id === "string");
 
-		const [{ data: votes, error: votesError }, { data: comments, error: commentsError }] =
-			await Promise.all([
-				supabase.from("votes").select("*").in("thread_id", threadIds),
-				supabase.from("comments").select("*").in("thread_id", threadIds),
-			]);
+		if (threadIds.length === 0) {
+			return NextResponse.json(
+				{ error: "No threads found for the specified group" },
+				{ status: 404 },
+			);
+		}
 
-		if (votesError || commentsError) {
+		const [votes, comments] = await Promise.all([
+			prisma.votes.findMany({
+				where: {
+					threadId: {
+						in: threadIds.length > 0 ? threadIds : ["0"],
+					},
+				},
+			}),
+			prisma.comments.findMany({
+				where: {
+					threadId: {
+						in: threadIds,
+					},
+				},
+			}),
+		]);
+
+		if (!votes || !comments) {
 			return NextResponse.json(
 				{
-					error: votesError?.message || commentsError?.message || "Error loading metrics",
+					error: "Failed to retrieve votes or comments",
 				},
-				{ status: 500 },
+				{ status: 404 },
 			);
 		}
 

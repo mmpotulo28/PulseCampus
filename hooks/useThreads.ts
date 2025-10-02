@@ -19,7 +19,7 @@ export function useThreads(groupId?: string): IUseThreads {
 	const threadsFetcher = useCallback(
 		async (url: string) => {
 			const { data } = await axios.get(url, {
-				params: { group_id: groupId },
+				params: { groupId: groupId },
 			});
 
 			return data.threads || [];
@@ -32,7 +32,7 @@ export function useThreads(groupId?: string): IUseThreads {
 		error: threadsError,
 		isLoading: threadsLoading,
 		mutate: fetchThreads,
-	} = useSWR(groupId ? `/api/threads?group_id=${groupId}` : `/api/threads`, threadsFetcher);
+	} = useSWR(groupId ? `/api/threads?groupId=${groupId}` : `/api/threads`, threadsFetcher);
 
 	const getThread = useCallback(async (threadId: string) => {
 		setThreadLoading(true);
@@ -50,7 +50,7 @@ export function useThreads(groupId?: string): IUseThreads {
 			}
 
 			const { data } = await axios.get(`/api/threads/thread`, {
-				params: { thread_id: threadId },
+				params: { threadId: threadId },
 			});
 
 			setThread(data.thread || null);
@@ -60,12 +60,7 @@ export function useThreads(groupId?: string): IUseThreads {
 		setThreadLoading(false);
 	}, []);
 
-	const createThread = async (
-		title: string,
-		description: string,
-		voteType: "yesno" | "mcq" = "yesno",
-		deadline?: string,
-	) => {
+	const createThread = async ({ title, description, voteType, deadline }: IThread) => {
 		setCreateLoading(true);
 		setCreateError(null);
 		setCreateSuccess(null);
@@ -85,10 +80,10 @@ export function useThreads(groupId?: string): IUseThreads {
 			}
 
 			const { data } = await axios.post("/api/threads", {
-				group_id: groupId,
+				groupId: groupId,
 				title,
 				description,
-				vote_type: voteType,
+				voteType: voteType,
 				deadline,
 			});
 
@@ -109,7 +104,7 @@ export function useThreads(groupId?: string): IUseThreads {
 
 			try {
 				await axios.delete(`/api/threads`, {
-					params: { thread_id: threadId },
+					params: { threadId: threadId },
 				});
 
 				setDeleteSuccess("Thread deleted successfully.");

@@ -12,7 +12,7 @@ if not exists pulse.votes
 	userId text,
 	vote text not null,
 	weight float default 1,
-	created_at timestamptz default now
+	createdAt timestamptz default now
 ()
 );
 

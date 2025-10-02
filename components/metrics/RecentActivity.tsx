@@ -17,7 +17,7 @@ export function RecentActivityTimeline({ recentComments }: { recentComments: any
 							{c.name}: {c.text.slice(0, 40)}...
 						</span>
 						<span className="text-xs text-default-300 ml-auto">
-							{c.created_at ? new Date(c.created_at).toLocaleString() : ""}
+							{c.createdAt ? new Date(c.createdAt).toLocaleString() : ""}
 						</span>
 					</li>
 				))}

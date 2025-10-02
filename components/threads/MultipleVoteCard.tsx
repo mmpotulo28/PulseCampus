@@ -24,7 +24,7 @@ export default function MultipleVoteCard({ thread }: MultipleVoteCardProps) {
 		votingCreateMessage,
 		votingCreateError,
 	} = useVoting({
-		thread_id: thread.id || "",
+		threadId: thread.id || "",
 		options: [], // options will be set from nominations
 		anonymous: false,
 		weighted: true,
@@ -97,7 +97,7 @@ export default function MultipleVoteCard({ thread }: MultipleVoteCardProps) {
 										variant={
 											selectedNomineeId === nominee.id ? "shadow" : "bordered"
 										}
-										onPress={() => handleVote(nominee.id)}>
+										onPress={() => handleVote(nominee.id || "")}>
 										{votingCreateLoading && selectedNomineeId === nominee.id
 											? "Voting..."
 											: userVote === nominee.id
@@ -124,7 +124,7 @@ export default function MultipleVoteCard({ thread }: MultipleVoteCardProps) {
 					<div className="mt-2 text-xs text-default-600">
 						{nominations.map((nominee) => (
 							<span key={nominee.id} className="mr-2">
-								{nominee.label}: {votes.voteCounts[nominee.id] || 0}
+								{nominee.label}: {votes.voteCounts[nominee.id || 0] || 0}
 							</span>
 						))}
 					</div>

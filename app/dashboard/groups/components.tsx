@@ -12,7 +12,6 @@ import {
 	Button,
 } from "@heroui/react";
 
-
 import { useOrganization } from "@clerk/nextjs";
 import React, { useEffect, useState } from "react";
 import { OrganizationMembershipResource } from "@clerk/types";
@@ -176,7 +175,7 @@ export function InviteUsersToGroup({ group }: { group: IGroup }) {
 	}, [organization]);
 
 	const handleInvite = async () => {
-		if (!group || selected.length === 0) return;
+		if (!group || selected.length === 0 || !group.id) return;
 		await inviteUsersToGroup(group.id, selected);
 	};
 

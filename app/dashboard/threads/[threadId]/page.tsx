@@ -23,7 +23,7 @@ export default function ThreadDetailsPage() {
 	useUser();
 	const { getThread, threadError, threadLoading, thread } = useThreads();
 	const { votes } = useVoting({
-		thread_id: thread?.id || "",
+		threadId: thread?.id || "",
 		anonymous: false,
 		weighted: true,
 	});

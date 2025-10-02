@@ -4,7 +4,7 @@ import type { OrganizationMembershipResource } from "@clerk/types";
 import { useState, useEffect } from "react";
 import { button as buttonStyles } from "@heroui/theme";
 import { Input } from "@heroui/input";
-import { useOrganization } from "@clerk/nextjs";
+import { useOrganization, useUser } from "@clerk/nextjs";
 import {
 	Spinner,
 	Select,
@@ -20,7 +20,7 @@ import { CalendarDate, Time } from "@internationalized/date";
 import { useThreads } from "@/hooks/useThreads";
 import { useGroup } from "@/hooks/useGroup";
 import { useNominations } from "@/hooks/useNominations";
-import { INomination } from "@/types";
+import { INomination, IThread } from "@/types";
 import { usePermissions } from "@/hooks/usePermissions";
 import { OrganizationSidePanel } from "@/components/OgranizationSidePanel";
 
@@ -34,6 +34,9 @@ export default function CreateThreadPage() {
 	const [members, setMembers] = useState<OrganizationMembershipResource[]>([]);
 	const [deadlineDate, setDeadlineDate] = useState<CalendarDate | null>(null);
 	const [deadlineTime, setDeadlineTime] = useState<Time | null>(null);
+
+	// hooks
+	const { user } = useUser();
 	const { organization } = useOrganization();
 	const { groups } = useGroup();
 	const { createThread, createLoading, createError, createSuccess, thread } =
@@ -71,12 +74,13 @@ export default function CreateThreadPage() {
 			...prev,
 			{
 				id: "",
-				thread_id: "", // can be set later when thread is created
+				threadId: "", // can be set later when thread is created
 				name: nominee.name,
 				email: nominee.email,
-				user_id: nominee.user_id,
+				userId: nominee.userId,
 				label: nominee.label,
 				key: nominee.label.toLowerCase().replace(/\s+/g, "_"),
+				createdAt: new Date(),
 			},
 		]);
 		setNominationInput(undefined);
@@ -101,11 +105,26 @@ export default function CreateThreadPage() {
 			deadlineTime.second || 0,
 		).toISOString();
 
+		const payload: IThread = {
+			title,
+			description: desc,
+			voteType: "yesno",
+			deadline,
+			groupId: selectedGroupId,
+			creatorId: user?.id || "",
+			status: "pending",
+			createdAt: new Date(),
+			totalMembers: members.length,
+		};
+
 		if (voteType === "yesno") {
-			await createThread(title, desc, "yesno", deadline);
+			await createThread(payload);
 		} else {
 			if (pendingNominations.length < 1) return;
-			await createThread(title, desc, "mcq", deadline);
+			await createThread({
+				...payload,
+				voteType: "mcq",
+			});
 		}
 	};
 
@@ -232,9 +251,9 @@ export default function CreateThreadPage() {
 										key: m.publicUserData?.identifier || m.id,
 										name: `${m.publicUserData?.firstName} ${m.publicUserData?.lastName}`,
 										email: m.publicUserData?.identifier || "",
-										user_id: m.id,
+										userId: m.id,
 										id: m.id,
-										thread_id: "", // can be set later when thread is created
+										threadId: "", // can be set later when thread is created
 									}))}
 									label="Proposed Nominees"
 									multiple={true}

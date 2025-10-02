@@ -45,7 +45,7 @@ export default function ThreadMetricsHeader({
 					color="warning"
 					size="sm"
 					as={Link}
-					href={`/dashboard/metrics/${thread?.group_id}`}>
+					href={`/dashboard/metrics/${thread?.groupId}`}>
 					View Group Metrics
 				</Button>
 				<Button

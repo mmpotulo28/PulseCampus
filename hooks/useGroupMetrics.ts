@@ -43,7 +43,7 @@ export function useGroupMetrics(
 	// swr fetcher
 	const fetcher = async (url: string) => {
 		const { data } = await axios.get(url, {
-			params: { group_id: groupId },
+			params: { groupId: groupId },
 		});
 
 		return data;
@@ -68,8 +68,8 @@ export function useGroupMetrics(
 		if (loading) return 0;
 
 		return new Set([
-			...(votes.map((v: IVote) => v.user_id) || []),
-			...(comments.map((c: IComment) => c.user_id) || []),
+			...(votes.map((v: IVote) => v.userId) || []),
+			...(comments.map((c: IComment) => c.userId) || []),
 		]).size;
 	}, [votes, comments, loading]);
 
@@ -88,8 +88,8 @@ export function useGroupMetrics(
 		const map: Record<string, number> = {};
 
 		votes.forEach((v: IVote) => {
-			if (v.created_at) {
-				const day = new Date(v.created_at).toLocaleDateString();
+			if (v.createdAt) {
+				const day = new Date(v.createdAt).toLocaleDateString();
 
 				map[day] = (map[day] || 0) + 1;
 			}
@@ -104,7 +104,7 @@ export function useGroupMetrics(
 		return threads
 			.map((t: IThread) => ({
 				...t,
-				voteCount: votes.filter((v: IVote) => v.thread_id === t.id).length || 0,
+				voteCount: votes.filter((v: IVote) => v.threadId === t.id).length || 0,
 			}))
 			.sort((a: { voteCount: number }, b: { voteCount: number }) => b.voteCount - a.voteCount)
 			.slice(0, 3);
@@ -117,8 +117,8 @@ export function useGroupMetrics(
 			comments
 				?.sort(
 					(a: IComment, b: IComment) =>
-						new Date(b.created_at || "").getTime() -
-						new Date(a.created_at || "").getTime(),
+						new Date(b.createdAt || "").getTime() -
+						new Date(a.createdAt || "").getTime(),
 				)
 				.slice(0, 5) || []
 		);
@@ -152,7 +152,7 @@ export function useGroupMetrics(
 		return threads?.length > 0
 			? threads.reduce<{ thread: IThread | null; count: number }>(
 					(max, t) => {
-						const count = votes.filter((v) => v.thread_id === t.id).length || 0;
+						const count = votes.filter((v) => v.threadId === t.id).length || 0;
 
 						return count > max.count ? { thread: t, count } : max;
 					},
@@ -165,7 +165,7 @@ export function useGroupMetrics(
 		return (
 			comments?.reduce(
 				(acc, c) => {
-					acc[c.user_id] = (acc[c.user_id] || 0) + 1;
+					acc[c.userId] = (acc[c.userId] || 0) + 1;
 
 					return acc;
 				},

@@ -20,7 +20,7 @@ export interface IGroup {
 	membersList: IGroupMember[];
 	isPublic: boolean;
 	activity: number;
-	createdAt: Date;
+	createdAt?: Date;
 	owner: string;
 }
 
@@ -31,7 +31,7 @@ export interface IThread {
 	title: string;
 	description: string;
 	status: string;
-	createdAt: Date;
+	createdAt?: Date;
 	deadline: string;
 	totalMembers: number;
 	voteType: string;
@@ -39,7 +39,7 @@ export interface IThread {
 
 export interface IComment {
 	id?: string;
-	createdAt: Date;
+	createdAt?: Date;
 	name: string;
 	text: string;
 	threadId: string;
@@ -48,7 +48,7 @@ export interface IComment {
 
 export interface INomination {
 	id?: string;
-	createdAt: Date;
+	createdAt?: Date;
 	email: string;
 	label: string;
 	name: string;
@@ -62,7 +62,7 @@ export interface IVote {
 	threadId: string;
 	vote: string;
 	weight: number;
-	createdAt: Date;
+	createdAt?: Date;
 	updatedAt?: Date;
 }
 

@@ -6,11 +6,16 @@ import { PencilSquareIcon, ChatBubbleLeftRightIcon, ClockIcon } from "@heroicons
 import ReactMarkdown from "react-markdown";
 
 import { useThreads } from "@/hooks/useThreads";
-import supabase from "@/lib/db";
+
 import { MessageCircleMore, Vote } from "lucide-react";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useComments } from "@/hooks/useComments";
+import { IThread } from "@/types";
+import { useVoting } from "@/hooks/useVoting";
 
 function ThreadStatsCard({ thread }: { thread: any }) {
+	const { votes } = useVoting(thread.id);
+
 	return (
 		<Card className="mb-4 p-4 bg-gradient-to-br from-primary/10 to-background/80 border-0 shadow flex flex-col gap-2">
 			<div className="flex items-center gap-3 mb-2">
@@ -29,7 +34,7 @@ function ThreadStatsCard({ thread }: { thread: any }) {
 			</div>
 			<div className="flex gap-4 text-xs text-default-400">
 				<span className="flex items-center gap-1">
-					<Vote className="h-4 w-4" /> {thread.votes?.length || 0} votes
+					<Vote className="h-4 w-4" /> {votes?.votes.length || 0} votes
 				</span>
 				<span className="flex items-center gap-1">
 					<MessageCircleMore className="h-4 w-4" /> {thread.comments?.length || 0}{" "}
@@ -44,8 +49,8 @@ function ThreadStatsCard({ thread }: { thread: any }) {
 	);
 }
 
-function RecentCommentsPreview({ comments }: { comments: any[] }) {
-	if (!comments?.length) return null;
+function RecentCommentsPreview({ thread }: { thread: IThread }) {
+	const { comments } = useComments(thread.id as string);
 
 	return (
 		<Card className="mb-4 p-4 bg-gradient-to-br from-info/10 to-background/80 border-0 shadow">
@@ -55,10 +60,10 @@ function RecentCommentsPreview({ comments }: { comments: any[] }) {
 			<ul className="space-y-2">
 				{comments.slice(0, 3).map((c: any) => (
 					<li key={c.id} className="flex items-center gap-2 text-xs text-default-400">
-						<span className="font-bold">{c.name || c.user_id}:</span>
+						<span className="font-bold">{c.name || c.userId}:</span>
 						<span>{c.text.slice(0, 40)}...</span>
 						<span className="ml-auto">
-							{c.created_at ? new Date(c.created_at).toLocaleDateString() : ""}
+							{c.createdAt ? new Date(c.createdAt).toLocaleDateString() : ""}
 						</span>
 					</li>
 				))}
@@ -71,6 +76,7 @@ export default function EditThreadPage() {
 	const { threadId } = useParams();
 	const { getThread, thread, threadLoading, threadError } = useThreads();
 	const { isAdmin, isExco } = usePermissions();
+
 	const [title, setTitle] = useState("");
 	const [desc, setDesc] = useState("");
 	const [status, setStatus] = useState("open");
@@ -94,16 +100,11 @@ export default function EditThreadPage() {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if ((!isAdmin && !isExco) || !threadId) return;
+
 		setSaving(true);
 		setSaveError(null);
 		setSaveSuccess(null);
 		try {
-			const { error } = await supabase
-				.from("threads")
-				.update({ title, description: desc, status })
-				.eq("id", threadId);
-
-			if (error) throw error;
 			setSaveSuccess("Thread updated!");
 			setTimeout(() => router.push(`/dashboard/threads/${threadId}`), 1500);
 		} catch (err: any) {
@@ -136,7 +137,7 @@ export default function EditThreadPage() {
 	return (
 		<div className="max-w-2xl mx-auto py-8 px-2">
 			<ThreadStatsCard thread={thread} />
-			<RecentCommentsPreview comments={thread.comments || []} />
+			<RecentCommentsPreview thread={thread} />
 			<Card className="p-8 rounded-2xl shadow-xl bg-white dark:bg-zinc-900 flex flex-col gap-6 border border-primary/20">
 				<div className="flex items-center gap-3 mb-2">
 					<PencilSquareIcon className="h-7 w-7 text-primary" />

@@ -140,9 +140,7 @@ export default function CommentsSection({
 										name={c.name || "Unknown"}
 									/>
 									<span className="text-xs text-default-400">
-										{c.created_at
-											? new Date(c.created_at).toLocaleString()
-											: ""}
+										{c.createdAt ? new Date(c.createdAt).toLocaleString() : ""}
 									</span>
 								</div>
 								<div className="flex-1">

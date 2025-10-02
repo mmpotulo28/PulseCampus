@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import supabase from "@/lib/db";
 import { getAuth } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
 	const auth = getAuth(req);
@@ -17,17 +17,20 @@ export async function GET(req: NextRequest) {
 	}
 
 	const { searchParams } = new URL(req.url);
-	const user_id = searchParams.get("user_id");
+	const userId = searchParams.get("userId");
 
-	if (!user_id) {
+	if (!userId) {
 		return NextResponse.json({ error: "User ID is required" }, { status: 400 });
 	}
 
-	const { data, error } = await supabase.from("comments").select("*").eq("user_id", user_id);
+	try {
+		const comments = await prisma.comments.findMany({
+			where: { userId: userId },
+			orderBy: { createdAt: "desc" },
+		});
 
-	if (error) {
+		return NextResponse.json({ comments });
+	} catch (error: any) {
 		return NextResponse.json({ error: error.message }, { status: 500 });
 	}
-
-	return NextResponse.json({ comments: data });
 }

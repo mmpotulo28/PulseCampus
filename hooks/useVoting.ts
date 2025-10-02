@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
 export function useVoting({
-	thread_id,
+	threadId,
 	options = [
 		{ id: "yes", label: "Yes" },
 		{ id: "no", label: "No" },
@@ -51,17 +51,17 @@ export function useVoting({
 		setVotingFetchMessage(null);
 		setVotingFetchError(null);
 
-		if (!thread_id) {
+		if (!threadId) {
 			setVotes({ votes: [], voteCounts: {} });
 			setVotingFetchLoading(false);
-			setVotingFetchError("No thread_id provided");
+			setVotingFetchError("No threadId provided");
 
 			return;
 		}
 
 		try {
 			const { data } = await axios.get(`/api/votes`, {
-				params: { thread_id },
+				params: { threadId },
 			});
 
 			const voteCounts: Record<string, number> = {};
@@ -83,13 +83,13 @@ export function useVoting({
 			setVotingFetchError(err.response?.data?.error || "Failed to fetch votes");
 		}
 		setVotingFetchLoading(false);
-	}, [thread_id, weighted]);
+	}, [threadId, weighted]);
 
 	useEffect(() => {
-		if (thread_id) {
+		if (threadId) {
 			fetchVotes();
 		}
-	}, [thread_id, fetchVotes]);
+	}, [threadId, fetchVotes]);
 
 	const submitVote = useCallback(
 		async (vote: string | string[]) => {
@@ -98,10 +98,10 @@ export function useVoting({
 			setVotingCreateError(null);
 
 			try {
-				if (!thread_id) throw new Error("Thread ID is required.");
+				if (!threadId) throw new Error("Thread ID is required.");
 
 				await axios.post("/api/votes", {
-					thread_id,
+					threadId,
 					vote,
 					weight: weighted ? 1 : undefined,
 				});
@@ -113,7 +113,7 @@ export function useVoting({
 			}
 			setVotingCreateLoading(false);
 		},
-		[thread_id, weighted],
+		[threadId, weighted],
 	);
 
 	useEffect(() => {
@@ -122,7 +122,7 @@ export function useVoting({
 		const noVotes = votes?.voteCounts["no"] || 0;
 		const maxVotes = Math.max(...Object.values(votes?.voteCounts || {}), 0);
 		const agreement = totalVotes ? (maxVotes / totalVotes) * 100 : 0;
-		const engagement = thread_id ? (totalVotes / (voteOptions.length || 1)) * 100 : 0;
+		const engagement = threadId ? (totalVotes / (voteOptions.length || 1)) * 100 : 0;
 		const reached = agreement >= 70 && engagement >= 50;
 
 		setConsensus({
@@ -133,7 +133,7 @@ export function useVoting({
 			noVotes,
 			totalVotes,
 		});
-	}, [votes?.voteCounts, thread_id, votes.votes, voteOptions.length]);
+	}, [votes?.voteCounts, threadId, votes.votes, voteOptions.length]);
 
 	return {
 		votes,

@@ -1,17 +1,11 @@
-import {
-	Modal,
-	ModalContent,
-	ModalBody,
-	ModalFooter,
-	Button,
-	Spinner,
-} from "@heroui/react";
+import { Modal, ModalContent, ModalBody, ModalFooter, Button, Spinner } from "@heroui/react";
 import React, { useEffect, useState } from "react";
 import { ProfileCard } from "@/components/ProfileCard";
 import { useProfile } from "@/hooks/useProfile";
 import { INomination } from "@/types";
-import supabase from "@/lib/db";
+
 import { ExternalLink } from "lucide-react";
+import { prisma } from "@/lib/db";
 
 export default function NomineeProfileModal({
 	nominee,
@@ -32,16 +26,16 @@ export default function NomineeProfileModal({
 		async function fetchNomination() {
 			if (!open || !nominee?.option) return;
 			setLoadingNomination(true);
-			const { data, error } = await supabase
-				.from("nominations")
-				.select("*")
-				.eq("id", nominee.option)
-				.single();
+			const noms = await prisma.nominations.findUnique({
+				where: { id: nominee.option },
+			});
 
-			if (error) console.error("Error fetching nomination:", error);
+			if (!noms) {
+				console.error("Nomination not found");
+			}
 
 			if (!cancelled) {
-				setNomination(data || null);
+				setNomination(noms || null);
 				setLoadingNomination(false);
 			}
 		}
@@ -52,7 +46,7 @@ export default function NomineeProfileModal({
 		};
 	}, [open, nominee?.option]);
 
-	const { profile, loading: loadingProfile } = useProfile(nomination?.user_id.trim() || "");
+	const { profile, loading: loadingProfile } = useProfile(nomination?.userId.trim() || "");
 
 	if (!open || !nominee?.option) return null;
 

@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import supabase from "@/lib/db";
 import { getAuth } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
 	const auth = getAuth(req);
 
 	if (!auth || !auth.userId) {
-		return Response.json(
+		return NextResponse.json(
 			{
 				error: true,
 				message: "Unauthorized: You must be signed in to access this resource.",
@@ -16,30 +16,29 @@ export async function GET(req: NextRequest) {
 		);
 	}
 	const { searchParams } = new URL(req.url);
-	const thread_id = searchParams.get("thread_id");
+	const threadId = searchParams.get("threadId");
 
-	if (!thread_id) {
+	if (!threadId) {
 		return NextResponse.json({ error: "Thread ID is required" }, { status: 400 });
 	}
 
-	const { data, error } = await supabase
-		.from("nominations")
-		.select("*")
-		.eq("thread_id", thread_id)
-		.order("created_at", { ascending: true });
+	try {
+		const nominations = await prisma.nominations.findMany({
+			where: { threadId: threadId },
+			orderBy: { createdAt: "asc" },
+		});
 
-	if (error) {
+		return NextResponse.json({ nominations });
+	} catch (error: any) {
 		return NextResponse.json({ error: error.message }, { status: 500 });
 	}
-
-	return NextResponse.json({ nominations: data });
 }
 
 export async function POST(req: NextRequest) {
 	const auth = getAuth(req);
 
 	if (!auth || !auth.userId) {
-		return Response.json(
+		return NextResponse.json(
 			{
 				error: true,
 				message: "Unauthorized: You must be signed in to access this resource.",
@@ -50,34 +49,35 @@ export async function POST(req: NextRequest) {
 	}
 
 	const body = await req.json();
-	const { thread_id, name, user_id, email, label } = body;
+	const { threadId, name, userId, email, label } = body;
 
-	if (!thread_id || !name || !user_id || !email || !label) {
+	if (!threadId || !name || !userId || !email || !label) {
 		return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
 	}
 
-	const payload = {
-		thread_id,
-		name,
-		user_id,
-		email,
-		label,
-	};
+	try {
+		const nomination = await prisma.nominations.create({
+			data: {
+				threadId: threadId,
+				name,
+				userId: userId,
+				email,
+				label,
+				createdAt: new Date(),
+			},
+		});
 
-	const { data, error } = await supabase.from("nominations").insert([payload]).select("*");
-
-	if (error) {
+		return NextResponse.json({ nomination });
+	} catch (error: any) {
 		return NextResponse.json({ error: error.message }, { status: 500 });
 	}
-
-	return NextResponse.json({ nomination: data[0] });
 }
 
 export async function DELETE(req: NextRequest) {
 	const auth = getAuth(req);
 
 	if (!auth || !auth.userId) {
-		return Response.json(
+		return NextResponse.json(
 			{
 				error: true,
 				message: "Unauthorized: You must be signed in to access this resource.",
@@ -88,17 +88,19 @@ export async function DELETE(req: NextRequest) {
 	}
 
 	const { searchParams } = new URL(req.url);
-	const nomination_id = searchParams.get("nomination_id");
+	const nominationId = searchParams.get("nominationId");
 
-	if (!nomination_id) {
+	if (!nominationId) {
 		return NextResponse.json({ error: "Nomination ID is required" }, { status: 400 });
 	}
 
-	const { error } = await supabase.from("nominations").delete().eq("id", nomination_id);
+	try {
+		await prisma.nominations.delete({
+			where: { id: nominationId },
+		});
 
-	if (error) {
+		return NextResponse.json({ message: "Nomination deleted successfully" });
+	} catch (error: any) {
 		return NextResponse.json({ error: error.message }, { status: 500 });
 	}
-
-	return NextResponse.json({ message: "Nomination deleted successfully" });
 }

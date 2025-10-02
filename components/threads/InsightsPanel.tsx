@@ -21,23 +21,22 @@ export default function InsightsPanel({ votes, thread }: InsightsPanelProps) {
 	const [nominated, setNominated] = useState(false);
 	const { isAdmin, isExco } = usePermissions();
 
-	const isMCQ = thread.vote_type === "mcq";
+	const isMCQ = thread.voteType === "mcq";
 
 	const handleNominateSelf = async () => {
 		if (!user || !thread.id) return;
 		const alreadyNominated = nominations.some(
-			(n) => n.user_id === user.id || n.email === user.emailAddresses?.[0]?.emailAddress,
+			(n) => n.userId === user.id || n.email === user.emailAddresses?.[0]?.emailAddress,
 		);
 
 		if (alreadyNominated) return;
 		await addNomination({
 			id: "",
-			thread_id: thread.id,
+			threadId: thread.id,
 			name: user.fullName || user.username || "Anonymous",
-			user_id: user.id,
+			userId: user.id,
 			email: user.emailAddresses?.[0]?.emailAddress || "",
 			label: user.fullName || user.username || "Anonymous",
-			key: user.id || "",
 		});
 		setNominated(true);
 	};
@@ -63,7 +62,7 @@ export default function InsightsPanel({ votes, thread }: InsightsPanelProps) {
 								nominated ||
 								nominations.some(
 									(n) =>
-										n.user_id === user?.id ||
+										n.userId === user?.id ||
 										n.email === user?.emailAddresses?.[0]?.emailAddress,
 								)
 							}
@@ -86,7 +85,7 @@ export default function InsightsPanel({ votes, thread }: InsightsPanelProps) {
 					</div>
 					{nominations.some(
 						(n) =>
-							n.user_id === user?.id ||
+							n.userId === user?.id ||
 							n.email === user?.emailAddresses?.[0]?.emailAddress,
 					) && (
 						<Tooltip content="You are already nominated for this thread.">

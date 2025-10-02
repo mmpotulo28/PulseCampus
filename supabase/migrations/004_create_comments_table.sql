@@ -3,13 +3,13 @@ IF NOT EXISTS comments
 (
 	id uuid PRIMARY KEY DEFAULT gen_random_uuid
 (),
-	thread_id uuid NOT NULL REFERENCES threads
+	threadId uuid NOT NULL REFERENCES threads
 (id) ON
 DELETE CASCADE,
-	user_id uuid
+	userId uuid
 NOT NULL,
 	text text NOT NULL,
-	created_at timestamptz DEFAULT now
+	createdAt timestamptz DEFAULT now
 ()
 );
 
@@ -18,7 +18,7 @@ ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow read for anon" ON comments
 	FOR
 SELECT
- USING (true);
+	USING (true);
 
 CREATE POLICY "Allow insert for authenticated" ON comments
 	FOR

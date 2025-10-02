@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import supabase from "@/lib/db";
 import { getAuth } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
 	const auth = getAuth(req);
@@ -17,21 +17,19 @@ export async function GET(req: NextRequest) {
 	}
 
 	const { searchParams } = new URL(req.url);
-	const group_id = searchParams.get("group_id");
+	const groupId = searchParams.get("groupId");
 
-	if (!group_id) {
+	if (!groupId) {
 		return NextResponse.json({ error: "Group ID is required" }, { status: 400 });
 	}
 
 	try {
-		const { data: group, error } = await supabase
-			.from("groups")
-			.select("*")
-			.eq("id", group_id)
-			.single();
+		const group = await prisma.groups.findUnique({
+			where: { id: groupId },
+		});
 
-		if (error) {
-			return NextResponse.json({ error: error.message }, { status: 500 });
+		if (!group) {
+			return NextResponse.json({ error: "Group not found" }, { status: 404 });
 		}
 
 		return NextResponse.json({ group });
@@ -56,19 +54,19 @@ export async function PUT(req: NextRequest) {
 	}
 
 	const { searchParams } = new URL(req.url);
-	const group_id = searchParams.get("group_id");
+	const groupId = searchParams.get("groupId");
 
-	if (!group_id) {
+	if (!groupId) {
 		return NextResponse.json({ error: "Group ID is required" }, { status: 400 });
 	}
 
 	try {
 		const updates = await req.json();
-		const { error } = await supabase.from("groups").update(updates).eq("id", group_id);
 
-		if (error) {
-			return NextResponse.json({ error: error.message }, { status: 500 });
-		}
+		await prisma.groups.update({
+			where: { id: groupId },
+			data: updates,
+		});
 
 		return NextResponse.json({ message: "Group updated successfully." });
 	} catch (error) {

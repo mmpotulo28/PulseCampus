@@ -1,36 +1,36 @@
--- Corrected groups table with org_id
+-- Corrected groups table with orgId
 CREATE TABLE
 IF NOT EXISTS groups
 (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid
 (),
-    org_id uuid NOT NULL, -- Organization ID
+    orgId uuid NOT NULL, -- Organization ID
     name text NOT NULL,
     description text,
     members integer DEFAULT 0,
-    is_public boolean DEFAULT true,
+    isPublic boolean DEFAULT true,
     activity integer DEFAULT 0,
-    created_at timestamptz DEFAULT now
+    createdAt timestamptz DEFAULT now
 (),
     owner text,
     members_list jsonb DEFAULT '[]'::jsonb
 );
 
--- Corrected threads table (group_id already present)
+-- Corrected threads table (groupId already present)
 CREATE TABLE
 IF NOT EXISTS threads
 (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid
 (),
-    group_id uuid REFERENCES groups
+    groupId uuid REFERENCES groups
 (id) ON
 DELETE CASCADE,
-    creator_id uuid,
+    creatorId uuid,
     title text
 NOT NULL,
     description text,
     status text DEFAULT 'Open',
-    created_at timestamptz DEFAULT now
+    createdAt timestamptz DEFAULT now
 (),
     deadline timestamptz,
     votes jsonb DEFAULT '{}'::jsonb,

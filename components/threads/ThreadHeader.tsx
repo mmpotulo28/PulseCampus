@@ -14,6 +14,7 @@ import Link from "next/link";
 
 import { usePermissions } from "@/hooks/usePermissions";
 import { ExternalLink } from "lucide-react";
+import { useThreadMetrics } from "@/hooks/useThreadMetrics";
 
 interface ThreadHeaderProps {
 	thread: IThread;
@@ -21,6 +22,7 @@ interface ThreadHeaderProps {
 
 export default function ThreadHeader({ thread }: ThreadHeaderProps) {
 	const { isAdmin, isExco } = usePermissions();
+	const { votes } = useThreadMetrics(thread.id as string);
 
 	return (
 		<Card className=" p-6 rounded-2xl shadow-lg flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
@@ -34,7 +36,7 @@ export default function ThreadHeader({ thread }: ThreadHeaderProps) {
 					<Tooltip content="Thread created date">
 						<span className="flex items-center gap-1">
 							<ClockIcon className="h-4 w-4 text-primary" />
-							{new Date(thread.created_at || "").toLocaleDateString()}
+							{new Date(thread.createdAt || "").toLocaleDateString()}
 						</span>
 					</Tooltip>
 					<Tooltip content="Voting deadline">
@@ -67,9 +69,7 @@ export default function ThreadHeader({ thread }: ThreadHeaderProps) {
 					<ChartBarIcon className="h-4 w-4 mr-1" />
 					Pulse Score:{" "}
 					{Math.round(
-						(((thread.votes?.yes ?? 0) + (thread.votes?.no ?? 0)) /
-							(thread.totalMembers || 1)) *
-							100,
+						(((votes?.yes ?? 0) + (votes?.no ?? 0)) / (thread.totalMembers || 1)) * 100,
 					)}
 					%
 				</span>

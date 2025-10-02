@@ -18,7 +18,7 @@ export function useNominations(threadId: string) {
 
 		try {
 			const { data } = await axios.get(`/api/nominations`, {
-				params: { thread_id: threadId },
+				params: { threadId: threadId },
 			});
 
 			setNominations(data.nominations || []);
@@ -43,7 +43,7 @@ export function useNominations(threadId: string) {
 			try {
 				const { data } = await axios.post("/api/nominations", {
 					...nomination,
-					thread_id: threadId,
+					threadId: threadId,
 				});
 
 				setNominations((prev) => [...prev, data.nomination]);
@@ -59,7 +59,7 @@ export function useNominations(threadId: string) {
 	const removeNomination = useCallback(async (nominationId: string) => {
 		try {
 			await axios.delete(`/api/nominations`, {
-				params: { nomination_id: nominationId },
+				params: { nominationId: nominationId },
 			});
 
 			setNominations((prev) => prev.filter((n) => n.id !== nominationId));
