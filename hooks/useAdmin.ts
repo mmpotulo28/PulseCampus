@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import type { IGroup, IThread, IVote, IComment, INomination } from "@/types";
 
@@ -114,7 +114,7 @@ export function useAdmin() {
 	};
 	const groupsGrowth = calcGrowth(groups);
 	const threadsGrowth = calcGrowth(threads);
-	const votesGrowth = calcGrowth(votes);
+	const votesGrowth = calcGrowth(votes.map((v) => ({ createdAt: v.createdAt || "" })));
 	const commentsGrowth = calcGrowth(comments);
 	const usersGrowth = calcGrowth(users);
 
