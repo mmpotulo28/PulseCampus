@@ -11,6 +11,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import js from "@eslint/js";
 import { FlatCompat } from "@eslint/eslintrc";
+import nextPlugin from "@next/eslint-plugin-next";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -60,6 +61,7 @@ export default defineConfig([
 			import: fixupPluginRules(_import),
 			"@typescript-eslint": typescriptEslint,
 			"jsx-a11y": fixupPluginRules(jsxA11Y),
+			"@next/next": nextPlugin,
 		},
 
 		languageOptions: {
