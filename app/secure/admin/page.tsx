@@ -1,20 +1,23 @@
 "use client";
 import { useEffect, useState } from "react";
-import {
-	Card,
-	Spinner,
-	Divider,
-	Chip,
-	Table,
-	TableHeader,
-	TableBody,
-	TableColumn,
-	TableRow,
-	TableCell,
-} from "@heroui/react";
+import { Card, Spinner, Divider } from "@heroui/react";
 import { ChartBarIcon, MessageCircleMore, Vote, UsersIcon } from "lucide-react";
-import axios from "axios";
 import UserGroupIcon from "@heroicons/react/24/solid/UserGroupIcon";
+import axios from "axios";
+import {
+	BarChart,
+	Bar,
+	XAxis,
+	YAxis,
+	Tooltip,
+	ResponsiveContainer,
+	PieChart,
+	Pie,
+	Cell,
+	Legend,
+} from "recharts";
+
+const COLORS = ["#6366f1", "#f59e42", "#10b981", "#3b82f6", "#f43f5e"];
 
 function StatCard({
 	icon,
@@ -59,6 +62,7 @@ export default function AdminDashboard() {
 					axios.get("/api/admin/comments"),
 					axios.get("/api/admin/users"),
 				]);
+
 				setGroups(groupsRes.data.groups || []);
 				setThreads(threadsRes.data.threads || []);
 				setVotes(votesRes.data.votes || []);
@@ -72,12 +76,27 @@ export default function AdminDashboard() {
 					users: usersRes.data.users?.length || 0,
 				});
 			} catch (err: any) {
+				console.error(err);
 				setError("Failed to load admin data");
 			}
 			setLoading(false);
 		}
 		fetchAll();
 	}, []);
+
+	// Example chart data
+	const threadsByGroup = groups.map((g) => ({
+		name: g.name,
+		Threads: threads.filter((t) => t.groupId === g.id).length,
+	}));
+	const votesByThread = threads.map((t) => ({
+		name: t.title,
+		Votes: votes.filter((v) => v.threadId === t.id).length,
+	}));
+	const commentsByThread = threads.map((t) => ({
+		name: t.title,
+		Comments: comments.filter((c) => c.threadId === t.id).length,
+	}));
 
 	return (
 		<div className="max-w-7xl mx-auto py-10 px-4">
@@ -124,99 +143,82 @@ export default function AdminDashboard() {
 						/>
 					</div>
 					<Divider className="my-6" />
-					<h2 className="text-xl font-bold mb-2">Recent Threads</h2>
-					<Table aria-label="Threads Table">
-						<TableHeader>
-							<TableColumn>Title</TableColumn>
-							<TableColumn>Group</TableColumn>
-							<TableColumn>Status</TableColumn>
-							<TableColumn>Created</TableColumn>
-							<TableColumn>Votes</TableColumn>
-						</TableHeader>
-						<TableBody>
-							{threads.slice(0, 10).map((t) => (
-								<TableRow key={t.id}>
-									<TableCell>{t.title}</TableCell>
-									<TableCell>{t.groupId}</TableCell>
-									<TableCell>
-										<Chip color={t.status === "Open" ? "success" : "danger"}>
-											{t.status}
-										</Chip>
-									</TableCell>
-									<TableCell>
-										{t.createdAt ? new Date(t.createdAt).toLocaleString() : ""}
-									</TableCell>
-									<TableCell>
-										{votes.filter((v) => v.threadId === t.id).length}
-									</TableCell>
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
-					<Divider className="my-6" />
-					<h2 className="text-xl font-bold mb-2">Recent Comments</h2>
-					<Table aria-label="Comments Table">
-						<TableHeader>
-							<TableColumn>User</TableColumn>
-							<TableColumn>Thread</TableColumn>
-							<TableColumn>Comment</TableColumn>
-							<TableColumn>Date</TableColumn>
-						</TableHeader>
-						<TableBody>
-							{comments.slice(0, 10).map((c) => (
-								<TableRow key={c.id}>
-									<TableCell>{c.name || c.userId}</TableCell>
-									<TableCell>{c.threadId}</TableCell>
-									<TableCell>{c.text.slice(0, 40)}...</TableCell>
-									<TableCell>
-										{c.createdAt ? new Date(c.createdAt).toLocaleString() : ""}
-									</TableCell>
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
-					<Divider className="my-6" />
-					<h2 className="text-xl font-bold mb-2">All Groups</h2>
-					<Table aria-label="Groups Table">
-						<TableHeader>
-							<TableColumn>Name</TableColumn>
-							<TableColumn>Org</TableColumn>
-							<TableColumn>Members</TableColumn>
-							<TableColumn>Created</TableColumn>
-						</TableHeader>
-						<TableBody>
-							{groups.slice(0, 10).map((g) => (
-								<TableRow key={g.id}>
-									<TableCell>{g.name}</TableCell>
-									<TableCell>{g.orgId}</TableCell>
-									<TableCell>{g.members}</TableCell>
-									<TableCell>
-										{g.createdAt ? new Date(g.createdAt).toLocaleString() : ""}
-									</TableCell>
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
-					<Divider className="my-6" />
-					<h2 className="text-xl font-bold mb-2">All Users</h2>
-					<Table aria-label="Users Table">
-						<TableHeader>
-							<TableColumn>User ID</TableColumn>
-							<TableColumn>Name</TableColumn>
-							<TableColumn>Email</TableColumn>
-							<TableColumn>Role</TableColumn>
-						</TableHeader>
-						<TableBody>
-							{users.slice(0, 10).map((u) => (
-								<TableRow key={u.id}>
-									<TableCell>{u.id}</TableCell>
-									<TableCell>{u.name}</TableCell>
-									<TableCell>{u.email}</TableCell>
-									<TableCell>{u.role}</TableCell>
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+						<Card className="p-6">
+							<h2 className="font-bold mb-4">Threads per Group</h2>
+							{threadsByGroup.length === 0 ? (
+								<div className="text-default-400 text-sm">No data</div>
+							) : (
+								<ResponsiveContainer width="100%" height={250}>
+									<BarChart data={threadsByGroup}>
+										<XAxis dataKey="name" />
+										<YAxis />
+										<Tooltip />
+										<Bar dataKey="Threads" fill="#6366f1" />
+									</BarChart>
+								</ResponsiveContainer>
+							)}
+						</Card>
+						<Card className="p-6">
+							<h2 className="font-bold mb-4">Votes per Thread</h2>
+							{votesByThread.length === 0 ? (
+								<div className="text-default-400 text-sm">No data</div>
+							) : (
+								<ResponsiveContainer width="100%" height={250}>
+									<BarChart data={votesByThread}>
+										<XAxis dataKey="name" />
+										<YAxis />
+										<Tooltip />
+										<Bar dataKey="Votes" fill="#10b981" />
+									</BarChart>
+								</ResponsiveContainer>
+							)}
+						</Card>
+						<Card className="p-6">
+							<h2 className="font-bold mb-4">Comments per Thread</h2>
+							{commentsByThread.length === 0 ? (
+								<div className="text-default-400 text-sm">No data</div>
+							) : (
+								<ResponsiveContainer width="100%" height={250}>
+									<BarChart data={commentsByThread}>
+										<XAxis dataKey="name" />
+										<YAxis />
+										<Tooltip />
+										<Bar dataKey="Comments" fill="#f59e42" />
+									</BarChart>
+								</ResponsiveContainer>
+							)}
+						</Card>
+						<Card className="p-6">
+							<h2 className="font-bold mb-4">User Distribution</h2>
+							{users.length === 0 ? (
+								<div className="text-default-400 text-sm">No data</div>
+							) : (
+								<ResponsiveContainer width="100%" height={250}>
+									<PieChart>
+										<Pie
+											data={users}
+											dataKey="role"
+											nameKey="role"
+											cx="50%"
+											cy="50%"
+											outerRadius={80}
+											fill="#8884d8"
+											label={(entry: any) => entry.role}>
+											{users.map((_entry, index) => (
+												<Cell
+													key={`cell-${index}`}
+													fill={COLORS[index % COLORS.length]}
+												/>
+											))}
+										</Pie>
+										<Tooltip />
+										<Legend />
+									</PieChart>
+								</ResponsiveContainer>
+							)}
+						</Card>
+					</div>
 				</>
 			)}
 		</div>

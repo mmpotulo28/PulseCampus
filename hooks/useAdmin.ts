@@ -74,6 +74,7 @@ export function useAdmin() {
 							.get("/api/admin/nominations")
 							.catch(() => ({ data: { nominations: [] } })),
 					]);
+
 				setGroups(groupsRes.data.groups || []);
 				setThreads(threadsRes.data.threads || []);
 				setVotes(votesRes.data.votes || []);
@@ -81,6 +82,7 @@ export function useAdmin() {
 				setUsers(usersRes.data.users || []);
 				setNominations(nominationsRes.data.nominations || []);
 			} catch (err: any) {
+				console.error(err);
 				setError("Failed to load admin data");
 			}
 			setLoading(false);
@@ -110,6 +112,7 @@ export function useAdmin() {
 				new Date(i.createdAt).getTime() > now.getTime() - 60 * 24 * 60 * 60 * 1000 &&
 				new Date(i.createdAt).getTime() <= now.getTime() - 30 * 24 * 60 * 60 * 1000,
 		).length;
+
 		return prev30 === 0 ? 100 : ((last30 - prev30) / prev30) * 100;
 	};
 	const groupsGrowth = calcGrowth(groups);
@@ -132,6 +135,7 @@ export function useAdmin() {
 
 	// Top Threads (by votes)
 	const threadVoteCounts: Record<string, number> = {};
+
 	votes.forEach((v) => {
 		threadVoteCounts[v.threadId] = (threadVoteCounts[v.threadId] || 0) + 1;
 	});
@@ -142,6 +146,7 @@ export function useAdmin() {
 
 	// Top Users (by activity)
 	const userActivity: Record<string, number> = {};
+
 	comments.forEach((c) => {
 		userActivity[c.userId] = (userActivity[c.userId] || 0) + 1;
 	});
@@ -158,6 +163,7 @@ export function useAdmin() {
 
 	// Top Voters
 	const voterCounts: Record<string, number> = {};
+
 	votes.forEach((v) => {
 		voterCounts[v.userId] = (voterCounts[v.userId] || 0) + 1;
 	});
@@ -171,6 +177,7 @@ export function useAdmin() {
 
 	// Top Commenters
 	const commenterCounts: Record<string, number> = {};
+
 	comments.forEach((c) => {
 		commenterCounts[c.userId] = (commenterCounts[c.userId] || 0) + 1;
 	});
@@ -184,6 +191,7 @@ export function useAdmin() {
 
 	// Top Nominees (by votes)
 	const nomineeVoteCounts: Record<string, number> = {};
+
 	votes.forEach((v) => {
 		nomineeVoteCounts[v.vote] = (nomineeVoteCounts[v.vote] || 0) + 1;
 	});
@@ -197,19 +205,23 @@ export function useAdmin() {
 
 	// Activity Heatmap (day of week, hour)
 	const activityHeatmap: Record<string, number> = {};
+
 	[...votes, ...comments].forEach((item) => {
 		const date = new Date(item.createdAt || "");
 		const day = date.toLocaleDateString("en-US", { weekday: "short" });
 		const hour = date.getHours();
 		const key = `${day}-${hour}`;
+
 		activityHeatmap[key] = (activityHeatmap[key] || 0) + 1;
 	});
 
 	// Most active day/hour
 	const dayCounts: Record<string, number> = {};
 	const hourCounts: Record<string, number> = {};
+
 	Object.keys(activityHeatmap).forEach((key) => {
 		const [day, hour] = key.split("-");
+
 		dayCounts[day] = (dayCounts[day] || 0) + activityHeatmap[key];
 		hourCounts[hour] = (hourCounts[hour] || 0) + activityHeatmap[key];
 	});
@@ -229,6 +241,7 @@ export function useAdmin() {
 			.sort((a, b) => b.engagement - a.engagement)[0] || null;
 
 	const groupThreadCounts: Record<string, number> = {};
+
 	threads.forEach((t) => {
 		groupThreadCounts[t.groupId] = (groupThreadCounts[t.groupId] || 0) + 1;
 	});

@@ -61,7 +61,6 @@ export default defineConfig([
 			import: fixupPluginRules(_import),
 			"@typescript-eslint": typescriptEslint,
 			"jsx-a11y": fixupPluginRules(jsxA11Y),
-			"@next/next": nextPlugin,
 		},
 
 		languageOptions: {
@@ -97,7 +96,15 @@ export default defineConfig([
 			"react-hooks/exhaustive-deps": "off",
 			"jsx-a11y/click-events-have-key-events": "warn",
 			"jsx-a11y/interactive-supports-focus": "warn",
-			"no-unused-vars": "error",
+			"no-unused-vars": [
+				"error",
+				{
+					args: "after-used",
+					ignoreRestSiblings: false,
+					argsIgnorePattern: "^_.*?$",
+					varsIgnorePattern: "^_.*?$",
+				},
+			],
 			"unused-imports/no-unused-imports": "error",
 			"@typescript-eslint/no-unused-vars": [
 				"error",
@@ -105,6 +112,7 @@ export default defineConfig([
 					args: "after-used",
 					ignoreRestSiblings: false,
 					argsIgnorePattern: "^_.*?$",
+					varsIgnorePattern: "^_.*?$",
 				},
 			],
 
