@@ -18,7 +18,7 @@ export default function GroupHeader({ group }: { group: IGroup }) {
 
 	return (
 		<div className="flex flex-col md:flex-row items-center gap-6 mb-6">
-			<Card className="flex-1 flex items-center gap-4 p-6 rounded-2xl shadow-lg bg-white dark:bg-zinc-900">
+			<Card className="flex-1 flex items-start gap-4 p-6 rounded-2xl shadow-lg">
 				<UserGroupIcon className="h-12 w-12 text-primary" />
 				<div>
 					<h1 className="text-2xl font-bold">{group.name}</h1>
