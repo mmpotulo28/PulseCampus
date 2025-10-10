@@ -8,7 +8,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 
 import { clerkConfig } from "@/lib/config/clerk";
 import { AgentOptions } from "@newrelic/browser-agent/src/loaders/agent.js";
-
+import LogRocket from "logrocket";
 let BrowserAgent: typeof import("@newrelic/browser-agent/loaders/browser-agent").BrowserAgent;
 
 if (typeof window !== "undefined") {
@@ -79,6 +79,15 @@ declare module "@react-types/shared" {
 
 export function Providers({ children, themeProps }: ProvidersProps) {
 	const router = useRouter();
+
+	LogRocket.init("2yfsz0/pulsecampus");
+	LogRocket.identify("THE_USER_ID_IN_YOUR_APP", {
+		name: "James Morrison",
+		email: "jamesmorrison@example.com",
+
+		// Add your own custom user variables here, ie:
+		subscriptionType: "pro",
+	});
 
 	return (
 		<HeroUIProvider navigate={router.push}>
