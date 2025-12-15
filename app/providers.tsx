@@ -9,6 +9,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { clerkConfig } from "@/lib/config/clerk";
 import { AgentOptions } from "@newrelic/browser-agent/src/loaders/agent.js";
 import LogRocket from "logrocket";
+import OneSignalSetup from "@/components/OneSignalSetup";
 let BrowserAgent: typeof import("@newrelic/browser-agent/loaders/browser-agent").BrowserAgent;
 
 if (typeof window !== "undefined") {
@@ -92,7 +93,11 @@ export function Providers({ children, themeProps }: ProvidersProps) {
 	return (
 		<HeroUIProvider navigate={router.push}>
 			<ClerkProvider appearance={clerkConfig.appearance}>
-				<NextThemesProvider {...themeProps}>{children} <Analytics /></NextThemesProvider>
+				<NextThemesProvider {...themeProps}>
+					{children}
+					<Analytics />
+					<OneSignalSetup />
+				</NextThemesProvider>
 			</ClerkProvider>
 		</HeroUIProvider>
 	);
