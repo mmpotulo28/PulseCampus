@@ -1,6 +1,6 @@
 "use client";
 import { Navbar as HeroUINavbar, NavbarContent, NavbarBrand, NavbarItem } from "@heroui/navbar";
-import { Button } from "@heroui/button";
+import { Button } from "@heroui/react";
 import { Kbd } from "@heroui/kbd";
 import { Link } from "@heroui/link";
 import { Input } from "@heroui/input";
