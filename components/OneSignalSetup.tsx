@@ -18,6 +18,10 @@ export default function OneSignalSetup() {
      allowLocalhostAsSecureOrigin: true,
     }).then(() => {
      console.log("OneSignal Initialized");
+     OneSignal.Slidedown.promptPush(); // Prompt for push notifications
+     OneSignal.User.PushSubscription.addEventListener("change", (event) => {
+      console.log("Push subscription changed:", event);
+     });
     });
    } catch (error) {
     console.error("OneSignal initialization failed:", error);

@@ -49,6 +49,7 @@ export default function Page() {
           Click the button below, and view the sample error on the Sentry{" "}
           <a
             target="_blank"
+            rel="noreferrer"
             href="https://mpotulom.sentry.io/issues/?project=4510537533882368"
           >
             Issues Page
@@ -56,6 +57,7 @@ export default function Page() {
           . For more details about setting up Sentry,{" "}
           <a
             target="_blank"
+            rel="noreferrer"
             href="https://docs.sentry.io/platforms/javascript/guides/nextjs/"
           >
             read our docs
@@ -172,7 +174,7 @@ export default function Page() {
           &:disabled {
 	            cursor: not-allowed;
 	            opacity: 0.6;
-	
+
 	            & > span {
 	              transform: translateY(0);
 	              border: none
@@ -220,7 +222,7 @@ export default function Page() {
           text-align: center;
           margin: 0;
         }
-        
+
         .connectivity-error a {
           color: #FFFFFF;
           text-decoration: underline;
