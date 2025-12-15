@@ -5,7 +5,7 @@ import { HeroUIProvider } from "@heroui/system";
 import { useRouter } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { ClerkProvider } from "@clerk/nextjs";
-
+import { Analytics } from "@vercel/analytics/next"
 import { clerkConfig } from "@/lib/config/clerk";
 import { AgentOptions } from "@newrelic/browser-agent/src/loaders/agent.js";
 import LogRocket from "logrocket";
@@ -92,7 +92,7 @@ export function Providers({ children, themeProps }: ProvidersProps) {
 	return (
 		<HeroUIProvider navigate={router.push}>
 			<ClerkProvider appearance={clerkConfig.appearance}>
-				<NextThemesProvider {...themeProps}>{children}</NextThemesProvider>
+				<NextThemesProvider {...themeProps}>{children} <Analytics /></NextThemesProvider>
 			</ClerkProvider>
 		</HeroUIProvider>
 	);
